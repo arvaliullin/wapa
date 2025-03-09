@@ -1,3 +1,6 @@
 [submodule "composer"]
 	path = composer
 	url = git@github.com:arvaliullin/wapa-composer.git
+[submodule "runner"]
+	path = runner
+	url = git@github.com:arvaliullin/wapa-runner.git
