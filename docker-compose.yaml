@@ -1,0 +1,85 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: wapa_user
+      POSTGRES_PASSWORD: wapa_password
+      POSTGRES_DB: wapa_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nats:
+    image: nats:latest
+    container_name: nats
+    restart: always
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    environment:
+      - "JS_ENABLE=true"
+
+  ftp:
+    image: fauria/vsftpd
+    container_name: ftp
+    ports:
+      - "21:21"
+    volumes:
+      - ftp_data:/home/vsftpd
+    environment:
+      FTP_USER: wasm_user
+      FTP_PASS: wasm_pass
+      PASV_ADDRESS: localhost
+      PASV_MIN_PORT: 21100
+      PASV_MAX_PORT: 21110
+
+  composer:
+    image: golang:1.20
+    container_name: composer
+    build:
+      context: ./composer
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgres://wapa_user:wapa_password@postgres:5432/wapa_db?sslmode=disable
+      NATS_URL: nats://nats:4222
+      FTP_HOST: ftp
+      FTP_USER: wasm_user
+      FTP_PASS: wasm_pass
+    volumes:
+      - ./WapaComposer:/go/src/app
+    ports:
+
+  runner:
+    image: node:20
+    container_name: runner
+    build:
+      context: ./WapaRunner
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NATS_URL: nats://nats:4222
+      FTP_HOST: ftp
+      FTP_USER: wasm_user
+      FTP_PASS: wasm_pass
+    volumes:
+      - ./WapaRunner:/usr/src/app
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - /path/to/static/files:/usr/share/nginx/html
+
+volumes:
+  postgres_data:
+  ftp_data:

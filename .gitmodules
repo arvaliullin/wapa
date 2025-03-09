@@ -7,3 +7,6 @@
 [submodule "exps"]
 	path = exps
 	url = git@github.com:arvaliullin/wapa-exps.git
+[submodule "ui"]
+	path = ui
+	url = git@github.com:arvaliullin/wapa-ui.git

@@ -30,11 +30,10 @@ WapaRunner - сервис который
 2. получает wasm-модуль с ftp
 3. выполняет замеры времени выполнения для модуля
 4. публикует результаты в очередь analyzer_result
-
-PerformanceAnalyzer  - может быть rpiPerfomaceAnalyzer, x86_64PerformanceAnalyzer, BrowserPermanceAnalyzer.
-
 Реализуется на Js.
 
 ## Используемое ПО
 1. Очередь сообщений -  NATS
 2. База данных - postgresql
+3. ftp сервер
+4. nginx
