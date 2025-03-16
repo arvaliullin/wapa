@@ -7,3 +7,6 @@
 [submodule "ui"]
 	path = ui
 	url = git@github.com:arvaliullin/wapa-ui.git
+[submodule "exps/integrate-go"]
+	path = exps/integrate-go
+	url = git@github.com:arvaliullin/wapa-integrate-go.git
