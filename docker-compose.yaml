@@ -24,20 +24,6 @@ services:
     environment:
       - "JS_ENABLE=true"
 
-  ftp:
-    image: fauria/vsftpd
-    container_name: ftp
-    ports:
-      - "21:21"
-    volumes:
-      - ftp_data:/home/vsftpd
-    environment:
-      FTP_USER: wasm_user
-      FTP_PASS: wasm_pass
-      PASV_ADDRESS: localhost
-      PASV_MIN_PORT: 21100
-      PASV_MAX_PORT: 21110
-
   composer:
     image: golang:1.20
     container_name: composer
@@ -54,6 +40,7 @@ services:
     volumes:
       - ./WapaComposer:/go/src/app
     ports:
+
 
   runner:
     image: node:20
