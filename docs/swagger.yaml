@@ -1,0 +1,208 @@
+definitions:
+  domain.Design:
+    properties:
+      functions:
+        description: Массив функций и их аргументов
+        items:
+          $ref: '#/definitions/domain.Function'
+        type: array
+      id:
+        description: Идентификатор плана эксперимента
+        example: exp123
+        type: string
+      js:
+        description: Имя файла JavaScript
+        example: index.js
+        type: string
+      lang:
+        description: Язык реализации модуля
+        example: go
+        type: string
+      name:
+        description: Имя эксперимента
+        example: x2Integrate
+        type: string
+      wasm:
+        description: Имя модуля WebAssembly
+        example: module.wasm
+        type: string
+    type: object
+  domain.Function:
+    properties:
+      args:
+        description: Список числовых аргументов функции
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: number
+        type: array
+      function:
+        description: Имя функции
+        example: calc
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/design:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создает новый эксперимент и загружает связанные файлы (JS и/или
+        Wasm)
+      parameters:
+      - description: Имя эксперимента
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Язык реализации модуля
+        in: formData
+        name: lang
+        required: true
+        type: string
+      - description: Файл JavaScript
+        in: formData
+        name: js
+        type: file
+      - description: Файл WebAssembly
+        in: formData
+        name: wasm
+        type: file
+      - description: JSON-строка с функциями
+        in: formData
+        name: functions
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ID созданного эксперимента
+          schema:
+            type: string
+        "400":
+          description: Неверный запрос
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Создать новый эксперимент
+      tags:
+      - Design
+  /api/design/{id}:
+    delete:
+      description: Удаляет эксперимент и связанные файлы по ID
+      parameters:
+      - description: ID эксперимента
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Эксперимент не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Удалить эксперимент
+      tags:
+      - Design
+  /api/design/{id}/files/{type}:
+    get:
+      description: Скачивает JavaScript или WebAssembly файл эксперимента по ID
+      parameters:
+      - description: ID эксперимента
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Тип файла (js или wasm)
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Файл или эксперимент не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Скачать файл эксперимента
+      tags:
+      - Design
+  /api/designs:
+    get:
+      description: Возвращает список планов экспериментов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Design'
+            type: array
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: получает список планов экспериментов
+      tags:
+      - Design
+  /api/experiment/{uid}/start:
+    post:
+      consumes:
+      - application/json
+      description: Запуск нового эксперимента по UID и параметрам из тела запроса
+      parameters:
+      - description: Уникальный идентификатор дизайна (Design ID)
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Параметры запуска эксперимента
+        in: body
+        name: payload
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Эксперимент успешно запущен
+          schema:
+            type: object
+        "400":
+          description: Ошибка в запросе из-за отсутствия UID или некорректных данных
+          schema:
+            type: object
+        "404":
+          description: Дизайн не найден по переданному UID
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Запуск эксперимента
+      tags:
+      - Experiment
+swagger: "2.0"

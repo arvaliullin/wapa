@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Идентификатор плана эксперимента"
+        },
+        "name": {
+            "type": "string",
+            "description": "Имя эксперимента"
+        },
+        "lang": {
+            "type": "string",
+            "description": "Язык реализации модуля",
+            "enum": [
+                "go",
+                "javascript",
+                "rust",
+                "cpp",
+                "tinygo"
+            ]
+        },
+        "js": {
+            "type": "string",
+            "description": "Имя файла javascript"
+        },
+        "wasm": {
+            "type": "string",
+            "description": "Имя модуля WebAssembly"
+        },
+        "functions": {
+            "type": "array",
+            "description": "Массив функций и их аргументов",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "function": {
+                        "type": "string",
+                        "description": "Имя функции"
+                    },
+                    "args": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "description": "Список числовых аргументов функции"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "function",
+                    "args"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "name",
+        "lang",
+        "js",
+        "functions"
+    ]
+}

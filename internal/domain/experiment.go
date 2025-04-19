@@ -1,0 +1,10 @@
+package domain
+
+// Experiment описывает результаты выполнения эксперимента
+type Experiment struct {
+	ID              string           `json:"id" example:"uid123"`
+	DesignID        string           `json:"design_id" example:"4d9cb632-a0fe-413e-a94b-9353b1e32963"`
+	SystemInfoID    string           `json:"system_info_id" example:"f87d6b622107"`
+	ExecutionTime   int64            `json:"execution_time" example:"1500"`
+	FunctionResults []FunctionResult `json:"function_results"`
+}
