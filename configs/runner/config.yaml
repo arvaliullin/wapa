@@ -1,0 +1,6 @@
+database_connection: "postgresql://postgres:password@database:5432/postgres?sslmode=disable"
+composer_address: "http://composer:8080"
+nats_url: "nats://nats:4222"
+nats_subject_runner: "runners"
+nats_subject_result: "results"
+data_path: "/opt/wapa/runner/data"

@@ -3,7 +3,7 @@ package delivery
 import (
 	"net/http"
 
-	_ "github.com/arvaliullin/wapa-composer/docs"
+	_ "github.com/arvaliullin/wapa/docs"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	swagger "github.com/swaggo/echo-swagger"

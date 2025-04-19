@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/arvaliullin/wapa-composer/internal/domain"
+	"github.com/arvaliullin/wapa/internal/domain"
 )
 
 type DesignRepositoryContract interface {

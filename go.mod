@@ -1,4 +1,4 @@
-module github.com/arvaliullin/wapa-composer
+module github.com/arvaliullin/wapa
 
 go 1.24.0
 

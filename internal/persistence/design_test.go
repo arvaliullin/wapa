@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/arvaliullin/wapa-composer/internal/domain"
+	"github.com/arvaliullin/wapa/internal/domain"
 	_ "github.com/lib/pq"
 )
 

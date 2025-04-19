@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arvaliullin/wapa-composer/internal/domain"
+	"github.com/arvaliullin/wapa/internal/domain"
 )
 
 type DesignStorageContract interface {

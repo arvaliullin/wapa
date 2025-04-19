@@ -6,10 +6,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/arvaliullin/wapa-composer/internal/broker"
-	"github.com/arvaliullin/wapa-composer/internal/delivery"
-	"github.com/arvaliullin/wapa-composer/internal/domain"
-	"github.com/arvaliullin/wapa-composer/internal/persistence"
+	"github.com/arvaliullin/wapa/internal/broker"
+	"github.com/arvaliullin/wapa/internal/delivery"
+	"github.com/arvaliullin/wapa/internal/domain"
+	"github.com/arvaliullin/wapa/internal/persistence"
 	"github.com/labstack/echo/v4"
 )
 

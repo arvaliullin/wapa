@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/arvaliullin/wapa-composer/internal/domain"
+	"github.com/arvaliullin/wapa/internal/domain"
 )
 
 func TestDesignStorage_SaveDesignFiles(t *testing.T) {

@@ -3,11 +3,11 @@ package app
 import (
 	"log"
 
-	"github.com/arvaliullin/wapa-composer/internal/broker"
-	"github.com/arvaliullin/wapa-composer/internal/delivery"
-	"github.com/arvaliullin/wapa-composer/internal/delivery/handlers"
-	"github.com/arvaliullin/wapa-composer/internal/persistence"
-	"github.com/arvaliullin/wapa-composer/internal/storage"
+	"github.com/arvaliullin/wapa/internal/broker"
+	"github.com/arvaliullin/wapa/internal/delivery"
+	"github.com/arvaliullin/wapa/internal/delivery/handlers"
+	"github.com/arvaliullin/wapa/internal/persistence"
+	"github.com/arvaliullin/wapa/internal/storage"
 	"github.com/nats-io/nats.go"
 )
 

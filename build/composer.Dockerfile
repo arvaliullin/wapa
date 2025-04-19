@@ -10,7 +10,7 @@ COPY . .
 
 RUN mkdir -p /opt/wapa/composer
 RUN go install github.com/swaggo/swag/cmd/swag@latest
-RUN go build -o /opt/wapa/composer/bin/composer github.com/arvaliullin/wapa-composer/cmd/composer
+RUN go build -o /opt/wapa/composer/bin/composer github.com/arvaliullin/wapa/cmd/composer
 
 COPY configs/composer/config.yaml /etc/wapa/composer/config.yaml
 

@@ -23,9 +23,9 @@ services:
       context: .
       dockerfile: build/composer.Dockerfile
     environment:
-      COMPOSER_DB_CONNECTION: "postgresql://postgres:password@database:5432/postgres?sslmode=disable"
+      PSQL_DB_CONNECTION: "postgresql://postgres:password@database:5432/postgres?sslmode=disable"
       COMPOSER_DATA_PATH: "/opt/wapa/composer/data"
-      COMPOSER_NATS_URL: "nats://nats:4222"
+      NATS_URL: "nats://nats:4222"
     ports:
       - "8080:8080"
     volumes:
@@ -34,6 +34,21 @@ services:
       - database
       - nats
 
+  runner:
+    build:
+      context: .
+      dockerfile: build/runner.Dockerfile
+    environment:
+      NATS_URL: "nats://nats:4222"
+      COMPOSER_ADDRESS: "http://composer:8080"
+      DATA_PATH: "/opt/wapa/runner/data"
+    volumes:
+      - runner_data:/opt/wapa/runner/data
+    depends_on:
+      - nats
+      - composer
+
 volumes:
   composer_data:
   postgres_data:
+  runner_data:
