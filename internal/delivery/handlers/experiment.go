@@ -77,18 +77,7 @@ func (h *ExperimentHandler) StartExperiment(c echo.Context) error {
 		}{Error: err.Error()})
 	}
 
-	type ConsumerPayload struct {
-		ID        string            `json:"id"`
-		Name      string            `json:"name"`
-		Lang      string            `json:"lang"`
-		JS        string            `json:"js"`
-		Wasm      string            `json:"wasm"`
-		Repeats   int               `json:"repeats"`
-		Warmup    bool              `json:"warmup"`
-		Functions []domain.Function `json:"functions"`
-	}
-
-	consumerPayload := ConsumerPayload{
+	consumerPayload := domain.DesignPayload{
 		ID:        design.ID,
 		Name:      design.Name,
 		Lang:      design.Lang,

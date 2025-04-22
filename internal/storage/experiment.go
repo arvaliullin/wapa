@@ -25,6 +25,12 @@ func NewExperimentStorage(baseDir string) (*ExperimentStorage, error) {
 	return &ExperimentStorage{DataDirStorage: baseDir}, nil
 }
 
+func (s *ExperimentStorage) ExperimentDir(id string) (string, error) {
+	dir := filepath.Join(s.DataDirStorage, id)
+	_, err := os.Stat(dir)
+	return dir, err
+}
+
 // DownloadFile скачивает файл и сохраняет его в локальное хранилище
 func (s *ExperimentStorage) DownloadFile(id, filetype, apiUrl string) (string, error) {
 	if id == "" || filetype == "" || apiUrl == "" {

@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/arvaliullin/wapa/internal/domain"
 	"github.com/arvaliullin/wapa/internal/storage"
@@ -38,15 +39,18 @@ func (service *RunnerService) Publish(message []byte) error {
 func (service *RunnerService) Start() {
 	_, err := service.NATSConnection.Subscribe(service.Config.NatsSubjectRunner,
 		func(msg *nats.Msg) {
-			var design domain.Design
+			var design domain.DesignPayload
 
 			if err := json.Unmarshal(msg.Data, &design); err != nil {
 				log.Printf("Ошибка декодирования задачи: %v", err)
 				return
 			}
 
-			experiment := service.ExecuteTask(design)
-
+			experiment, err := service.Execute(design)
+			if err != nil {
+				log.Printf("ошибка выполнения эксперимента: %v", err)
+				return
+			}
 			resBytes, err := json.Marshal(experiment)
 			if err != nil {
 				log.Printf("Ошибка сериализации результата: %v", err)
@@ -62,28 +66,31 @@ func (service *RunnerService) Start() {
 	log.Printf("Слушаем задания в %s ...", service.Config.NatsSubjectRunner)
 }
 
-func (service *RunnerService) ExecuteTask(design domain.Design) domain.Experiment {
+func (service *RunnerService) Execute(design domain.DesignPayload) (domain.Experiment, error) {
 
 	var wasmPath, jsPath string
 
 	wasmPath, err := service.Storage.DownloadFile(design.ID, "wasm", service.Config.ComposerAddress)
-	if err == nil {
-		defer service.Storage.DeleteFile(wasmPath)
+	if err != nil {
+		log.Printf("ошибка при скачивании %s ...", err)
 	}
 	jsPath, err = service.Storage.DownloadFile(design.ID, "js", service.Config.ComposerAddress)
-	if err == nil {
-		defer service.Storage.DeleteFile(jsPath)
+	if err != nil {
+		log.Printf("ошибка при скачивании %s ...", err)
 	}
 
-	//TODO: Реализовать запуск Command
+	command := Command{
+		DesignPayload:      design,
+		HyperfinePath:      "hyperfine",
+		HyperfineResultDir: os.TempDir(),
+		NodePath:           "bun",
+		ScriptPath:         "/opt/wapa/scripts/cpp.js",
+		WasmPath:           wasmPath,
+		JsPath:             jsPath,
+	}
 
-	log.Printf("Запустить тест для: %v\n", design)
-	log.Printf("wasmPath: %s\n", wasmPath)
-	log.Printf("wasmPath: %s\n", wasmPath)
-
-	experiment := domain.Experiment{}
-
-	return experiment
+	experiment := command.Run()
+	return experiment, nil
 }
 
 func (service *RunnerService) Run() {
