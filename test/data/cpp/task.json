@@ -1,0 +1,10 @@
+{
+    "function": "x2Integrate",
+    "args": [
+        0,
+        100,
+        10000
+    ],
+    "jsPath": "test/data/cpp/lib_cpp.out.js",
+    "wasmPath": "test/data/cpp/lib_cpp.out.wasm"
+}

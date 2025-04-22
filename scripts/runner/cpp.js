@@ -1,34 +1,58 @@
-// scripts/runner/cpp.js
+const fs = require("fs/promises");
+const { readFileSync } = require("fs");
+const path = require("path");
 
-// Получаем JSON-данные из переменной окружения
-const rawData = process.env.JSON_DATA;
-
-if (!rawData) {
-    console.error("Environment variable JSON_DATA is not set.");
-    process.exit(1);
-}
-
-console.log("Raw input from environment:", rawData);
-
-try {
-    // Парсим JSON
-    const obj = JSON.parse(rawData);
-    console.log("Parsed object:", obj);
-
-    // Функция для задержки
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+async function main() {
+    let task;
+    try {
+        const taskJson = process.env.TASK_JSON;
+        if (!taskJson) throw new Error("Не определена переменная окружения TASK_JSON");
+        task = typeof taskJson === "object" ? taskJson : JSON.parse(taskJson);
+    } catch (e) {
+        process.stderr.write("[runner/cpp] Ошибка разбора TASK_JSON: " + e.message + "\n");
+        process.exit(2);
     }
 
-    // Пример асинхронной функции
-    async function example() {
-        console.log("Start sleeping...");
-        await sleep(1000);
-        console.log("Finished sleeping!");
+    const { function: functionName, args = [], wasmPath } = task;
+    if (!wasmPath) {
+        process.stderr.write("[runner/cpp] Не указан путь wasmPath в TASK_JSON\n");
+        process.exit(3);
     }
 
-    example();
-} catch (error) {
-    console.error("Invalid JSON in environment variable JSON_DATA:", error.message);
-    process.exit(1);
+    if (!functionName) {
+        process.stderr.write("[runner/cpp] Не указана функция function в TASK_JSON\n");
+        process.exit(4);
+    }
+
+    let module, instance;
+    try {
+        const wasmAbsPath = path.resolve(wasmPath);
+        const wasmBytes = readFileSync(wasmAbsPath);
+        module = await WebAssembly.compile(wasmBytes);
+        instance = await WebAssembly.instantiate(module, {});
+    } catch (e) {
+        process.stderr.write(`[runner/cpp] Ошибка загрузки WASM: ${e.message}\n`);
+        process.exit(5);
+    }
+
+    if (
+        !instance.exports ||
+        typeof instance.exports[functionName] !== "function"
+    ) {
+        process.stderr.write(
+            `[runner/cpp] Функция '${functionName}' не экспортируется wasm-модулем\n`
+        );
+        process.exit(6);
+    }
+
+    try {
+        instance.exports[functionName](...args);
+    } catch (e) {
+        process.stderr.write(
+            `[runner/cpp] Ошибка выполнения функции '${functionName}': ${e.message}\n`
+        );
+        process.exit(7);
+    }
 }
+
+main();

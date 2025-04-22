@@ -1,6 +1,8 @@
+include scripts/makefiles/testing.mk
 
 sub:
 	go run github.com/arvaliullin/wapa/examples/sub
+
 pub:
 	go run github.com/arvaliullin/wapa/examples/pub
 
