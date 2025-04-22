@@ -16,4 +16,14 @@ test-go:
 	--show-output \
 	--export-json '$(HYPERFINE_RESULT_GO)'
 
-.PHONY: test-cpp test-go
+
+TASK_JSON_RUST := $(shell cat test/data/rs/task.json | tr -d '\n')
+HYPERFINE_RESULT_RUST := test/data/rs/hyperfine.json
+test-rust:
+	@echo '=== Benchmarking Rust wasm ==='
+	TASK_JSON='$(TASK_JSON_RUST)' \
+	hyperfine --warmup 50 --runs 100 'bun ./scripts/runner/rs.js' \
+	--show-output \
+	--export-json '$(HYPERFINE_RESULT_RUST)'
+
+.PHONY: test-cpp test-go test-rust
