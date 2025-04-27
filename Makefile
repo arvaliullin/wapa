@@ -15,10 +15,13 @@ build: swag
 up:
 	docker-compose up --build --force-recreate
 
+down:
+	docker-compose down -v --rmi all
+
 db:
 	docker-compose up database --build --force-recreate
 
 tests:
 	go test -v ./...
 
-.PHONY: sub pub build up db tests
+.PHONY: sub pub build up db tests down

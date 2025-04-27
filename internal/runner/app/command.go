@@ -1,6 +1,9 @@
 package app
 
 import (
+	"log"
+	"os"
+
 	"github.com/arvaliullin/wapa/internal/domain"
 	"github.com/arvaliullin/wapa/internal/hyperfine"
 )
@@ -60,8 +63,16 @@ func (c *Command) Run() domain.Experiment {
 			Metrics:      metrics,
 		})
 	}
+
+	hostname, err := os.Hostname()
+
+	if err != nil {
+		log.Printf("Can't get hostname %s", err)
+	}
+
 	return domain.Experiment{
 		DesignID:        designID,
 		FunctionResults: funcResults,
+		Hostname:        hostname,
 	}
 }

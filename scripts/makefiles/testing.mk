@@ -3,7 +3,7 @@ HYPERFINE_RESULT_CPP := test/data/cpp/hyperfine.json
 test-cpp:
 	@echo '=== Benchmarking C++ wasm ==='
 	TASK_JSON='$(TASK_JSON_CPP)' \
-	hyperfine --warmup 50 --runs 100 'bun ./scripts/runner/cpp.js' \
+	hyperfine --warmup 15 --runs 10 'bun ./scripts/runner/cpp.js' \
 	--show-output \
 	--export-json '$(HYPERFINE_RESULT_CPP)'
 

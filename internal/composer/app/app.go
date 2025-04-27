@@ -27,12 +27,14 @@ func NewComposerService(config *ComposerConfig) *ComposerService {
 		log.Fatalf("Error connecting to NATS: %v", err)
 	}
 
+	experimentRepository := persistence.NewExperimentRepository(config.DbConnection)
+
 	return &ComposerService{
 		Config:           config,
 		HttpService:      delivery.NewEchoHttpService(),
 		NATSConnection:   nc,
 		DesignPublisher:  broker.NewDesignPublisher(nc, config.NatsSubjectRunner),
-		ResultSubscriber: broker.NewResultSubscriber(nc, config.NatsSubjectResult),
+		ResultSubscriber: broker.NewResultSubscriber(nc, config.NatsSubjectResult, experimentRepository),
 	}
 }
 
