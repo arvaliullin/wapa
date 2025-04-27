@@ -25,14 +25,14 @@ CREATE TABLE composer.experiment (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     design_id UUID REFERENCES composer.design(id) ON DELETE CASCADE,
     hostname TEXT NOT NULL,
-    execution_time BIGINT NOT NULL
+    arch TEXT NOT NULL
 );
 
 COMMENT ON TABLE composer.experiment IS 'Таблица для хранения информации о выполнении экспериментов';
 COMMENT ON COLUMN composer.experiment.id IS 'Уникальный идентификатор эксперимента';
 COMMENT ON COLUMN composer.experiment.design_id IS 'План эксперимента';
 COMMENT ON COLUMN composer.experiment.hostname IS 'Имя машины';
-COMMENT ON COLUMN composer.experiment.execution_time IS 'Время выполнения кода';
+COMMENT ON COLUMN composer.experiment.arch IS 'Архитектура системы';
 
 CREATE TABLE composer.function_result (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

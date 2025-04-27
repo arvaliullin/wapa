@@ -29,11 +29,11 @@ func (repo *ExperimentRepository) Create(exp domain.Experiment) (string, error) 
 	var id string
 	err := WithConnection(repo.DbConnection, func(conn *sql.DB) error {
 		query := `
-			INSERT INTO composer.experiment (design_id, hostname, execution_time)
+			INSERT INTO composer.experiment (design_id, hostname, arch)
 			VALUES ($1, $2, $3)
 			RETURNING id
 		`
-		err := conn.QueryRow(query, exp.DesignID, exp.Hostname, exp.ExecutionTime).Scan(&id)
+		err := conn.QueryRow(query, exp.DesignID, exp.Hostname, exp.Arch).Scan(&id)
 		if err != nil {
 			return err
 		}
@@ -56,11 +56,11 @@ func (repo *ExperimentRepository) GetByID(id string) (domain.Experiment, error) 
 	var exp domain.Experiment
 	err := WithConnection(repo.DbConnection, func(conn *sql.DB) error {
 		query := `
-            SELECT id, design_id, hostname, execution_time
+            SELECT id, design_id, hostname, arch
             FROM composer.experiment WHERE id = $1
         `
 		err := conn.QueryRow(query, id).Scan(
-			&exp.ID, &exp.DesignID, &exp.Hostname, &exp.ExecutionTime)
+			&exp.ID, &exp.DesignID, &exp.Hostname, &exp.Arch)
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (repo *ExperimentRepository) GetAll() ([]domain.Experiment, error) {
 
 	err := WithConnection(repo.DbConnection, func(conn *sql.DB) error {
 		query := `
-            SELECT id, design_id, hostname, execution_time
+            SELECT id, design_id, hostname, arch
             FROM composer.experiment
         `
 		rows, err := conn.Query(query)
@@ -92,7 +92,7 @@ func (repo *ExperimentRepository) GetAll() ([]domain.Experiment, error) {
 
 		for rows.Next() {
 			var exp domain.Experiment
-			if err := rows.Scan(&exp.ID, &exp.DesignID, &exp.Hostname, &exp.ExecutionTime); err != nil {
+			if err := rows.Scan(&exp.ID, &exp.DesignID, &exp.Hostname, &exp.Arch); err != nil {
 				return err
 			}
 

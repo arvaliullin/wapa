@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/arvaliullin/wapa/internal/domain"
 	"github.com/arvaliullin/wapa/internal/hyperfine"
@@ -74,5 +75,6 @@ func (c *Command) Run() domain.Experiment {
 		DesignID:        designID,
 		FunctionResults: funcResults,
 		Hostname:        hostname,
+		Arch:            runtime.GOARCH,
 	}
 }
