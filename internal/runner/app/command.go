@@ -1,15 +1,8 @@
 package app
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-	"os/exec"
-	"path"
-
 	"github.com/arvaliullin/wapa/internal/domain"
+	"github.com/arvaliullin/wapa/internal/hyperfine"
 )
 
 type Command struct {
@@ -35,56 +28,29 @@ func (c *Command) Run() domain.Experiment {
 			JsPath:   c.JsPath,
 		}
 
-		taskJSON, _ := json.Marshal(task)
-		cmdStr := fmt.Sprintf("%s '%s %s'", c.NodePath, c.ScriptPath, string(taskJSON))
-		hfPath := path.Join(c.HyperfineResultDir, "hf.json")
-		hfFlag := fmt.Sprintf("--runs %d --export-json=%s", c.DesignPayload.Repeats, hfPath)
+		cmd := hyperfine.NewHyperfineCommand(task, c.DesignPayload)
+		result, err := cmd.Run()
 
-		hyperfineCmd := exec.Command(
-			c.HyperfinePath,
-			hfFlag,
-			cmdStr,
-		)
+		if err != nil {
+			continue
+		}
 
-		var hfOut, hfErr bytes.Buffer
-		hyperfineCmd.Stdout = &hfOut
-		hyperfineCmd.Stderr = &hfErr
+		if result == nil {
+			continue
+		}
 
-		err := hyperfineCmd.Run()
+		if len(result.Results) < 1 {
+			continue
+		}
 
-		log.Printf("COMMAND: %s", hyperfineCmd.String())
-
-		var metrics domain.Metrics
-		if err == nil {
-			hfjson, _ := os.ReadFile(hfPath)
-			type HfEntry struct {
-				Mean   float64 `json:"mean"`
-				Stddev float64 `json:"stddev"`
-				Median float64 `json:"median"`
-				User   float64 `json:"user"`
-				System float64 `json:"system"`
-				Min    float64 `json:"min"`
-				Max    float64 `json:"max"`
-			}
-			type HfRes struct {
-				Results []HfEntry `json:"results"`
-			}
-			var hf HfRes
-			_ = json.Unmarshal(hfjson, &hf)
-			if len(hf.Results) > 0 {
-				v := hf.Results[0]
-				metrics = domain.Metrics{
-					Mean:   v.Mean,
-					Stddev: v.Stddev,
-					Median: v.Median,
-					User:   v.User,
-					System: v.System,
-					Min:    v.Min,
-					Max:    v.Max,
-				}
-			}
-		} else {
-			metrics = domain.Metrics{}
+		metrics := domain.Metrics{
+			Mean:   result.Results[0].Mean,
+			Stddev: result.Results[0].Stddev,
+			Median: result.Results[0].Median,
+			User:   result.Results[0].User,
+			System: result.Results[0].System,
+			Min:    result.Results[0].Min,
+			Max:    result.Results[0].Max,
 		}
 
 		funcResults = append(funcResults, domain.FunctionResult{

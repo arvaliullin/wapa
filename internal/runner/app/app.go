@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+// RunnerService получает план эксперимента, запускает его, отправляет результат в composer
 type RunnerService struct {
 	Config         *RunnerConfig
 	Storage        *storage.ExperimentStorage

@@ -1,5 +1,6 @@
 package domain
 
+// Task описывает данные которые будут использоваться для запуска модуля
 type Task struct {
 	// Имя функции
 	Function string `json:"function" example:"calc"`
