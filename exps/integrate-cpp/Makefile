@@ -34,7 +34,7 @@ experiment-start:
 	python3 scripts/experiment-start.py \
 		--endpoint http://localhost:8080/api \
 		--name x2IntegrateGo \
-		--repeats 10 \
+		--repeats 100 \
 		--warmup
 clean:
 	@echo "Очистка сгенерированных файлов... (clean)"
