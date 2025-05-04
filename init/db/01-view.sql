@@ -114,3 +114,24 @@ JOIN composer.experiment e ON fr.experiment_id = e.id
 JOIN composer.design d ON e.design_id = d.id
 GROUP BY fr.function_name, fr.args, d.lang
 ORDER BY fr.function_name, fr.args, avg_mean_time;
+
+CREATE OR REPLACE VIEW composer.function_result_full AS
+SELECT
+    fr.id AS function_result_id,
+    fr.function_name,
+    fr.args,
+    fr.repeats,
+    fr.result,
+    e.id AS experiment_id,
+    d.id AS design_id,
+    d.name AS design_name,
+    d.lang AS design_lang,
+    d.js AS design_js,
+    d.wasm AS design_wasm,
+    d.functions AS design_functions,
+    e.hostname AS experiment_hostname,
+    e.arch AS experiment_arch
+FROM
+    composer.function_result fr
+    INNER JOIN composer.experiment e ON fr.experiment_id = e.id
+    INNER JOIN composer.design d ON e.design_id = d.id;
