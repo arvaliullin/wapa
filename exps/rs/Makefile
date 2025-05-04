@@ -26,7 +26,7 @@ experiment-start:
 	python3 scripts/experiment-start.py \
 		--endpoint $(EXPERIMENT_ENDPOINT) \
 		--name rs_exps \
-		--repeats 1000 \
+		--repeats 10 \
 		--warmup
 
 clean:
