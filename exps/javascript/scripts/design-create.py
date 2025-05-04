@@ -32,9 +32,8 @@ def main():
     parser.add_argument('--endpoint', required=True, help="URL эндпоинта API для создания эксперимента")
     parser.add_argument('--design', required=True, help="Путь к файлу design.json")
     parser.add_argument('--js', required=True, help="Путь к JS-файлу")
-    parser.add_argument('--wasm', required=True, help="Путь к WASM-файлу")
     args = parser.parse_args()
-    upload_design(args.endpoint, args.design, args.js, args.wasm)
+    upload_design(args.endpoint, args.design, args.js, None)
 
 if __name__ == '__main__':
     main()

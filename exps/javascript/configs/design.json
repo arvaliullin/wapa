@@ -1,8 +1,8 @@
 {
-    "name": "x2IntegrateGo",
-    "lang": "cpp",
-    "js": "lib_cpp.out.js",
-    "wasm": "lib_cpp.out.wasm",
+    "name": "js_exps",
+    "lang": "javascript",
+    "js": "lib_js.out.js",
+    "wasm": "",
     "functions": [
         {
             "function": "x2Integrate",
