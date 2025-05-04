@@ -121,14 +121,8 @@ SELECT
     fr.function_name,
     fr.args,
     fr.repeats,
-    fr.result,
-    e.id AS experiment_id,
-    d.id AS design_id,
     d.name AS design_name,
     d.lang AS design_lang,
-    d.js AS design_js,
-    d.wasm AS design_wasm,
-    d.functions AS design_functions,
     e.hostname AS experiment_hostname,
     e.arch AS experiment_arch
 FROM
