@@ -21,9 +21,9 @@ type HyperfineCommand struct {
 func NewHyperfineCommand(task domain.Task, designPayload domain.DesignPayload) *HyperfineCommand {
 
 	scripts := map[string]string{
-		"cpp": "/repo/scripts/runner/cpp.js",
-		"go":  "/repo/scripts/runner/go.js",
-		"rs":  "/repo/scripts/runner/rs.js",
+		"cpp": "/opt/wapa/scripts/cpp.js",
+		"go":  "/opt/wapa/scripts/go.js",
+		"rs":  "/opt/wapa/scripts/rs.js",
 	}
 
 	resultDir := filepath.Join(os.TempDir(), designPayload.ID)
