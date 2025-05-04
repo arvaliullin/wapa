@@ -33,6 +33,11 @@ func (c *Command) Run() domain.Experiment {
 		}
 
 		cmd := hyperfine.NewHyperfineCommand(task, c.DesignPayload)
+		if cmd == nil {
+			log.Printf("Ошибка создания команды %v\n", task)
+			continue
+		}
+
 		result, err := cmd.Run()
 
 		if err != nil {
