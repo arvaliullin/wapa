@@ -9,8 +9,7 @@ build:
 	mkdir -p ./out
 	em++ ./src/lib.cpp \
 		-s WASM=1 \
-		-s EXPORTED_FUNCTIONS="['_x2Integrate']" \
-		-s EXPORTED_RUNTIME_METHODS=ccall \
+		-s EXPORTED_FUNCTIONS="['_x2Integrate','_x2IntegrateMock','_fibonacciRecursive','_fibonacciRecursiveMock','_fibonacciIterative','_fibonacciIterativeMock','_multiply','_multiplyMock','_multiplyVector','_multiplyVectorMock','_factorize','_factorizeMock']" \
 		-s MODULARIZE -o ./out/lib_cpp.out.js
 
 bench: build
