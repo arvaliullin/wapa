@@ -1,0 +1,14 @@
+[Unit]
+Description=Runner Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/wapa/bin/runner
+WorkingDirectory=/opt/wapa/bin/
+Environment="NATS_SERVER=nats://192.168.0.200:4222"
+Environment="NATS_TOPIC=runners"
+Environment="NATS_TIMEOUT=3000"
+
+[Install]
+WantedBy=default.target

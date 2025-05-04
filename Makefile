@@ -1,4 +1,5 @@
 include scripts/makefiles/testing.mk
+include scripts/makefiles/arm.mk
 
 sub:
 	go run github.com/arvaliullin/wapa/examples/sub
