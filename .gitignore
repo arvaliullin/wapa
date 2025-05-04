@@ -27,3 +27,4 @@ go.work.sum
 out/
 
 exps/rs/target/
+*.zip

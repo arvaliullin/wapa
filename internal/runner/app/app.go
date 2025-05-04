@@ -71,11 +71,11 @@ func (service *RunnerService) Execute(design domain.DesignPayload) (domain.Exper
 
 	var wasmPath, jsPath string
 
-	wasmPath, err := service.Storage.DownloadFile(design.ID, "wasm", service.Config.ComposerAddress)
+	wasmPath, err := service.Storage.DownloadFile(design, "wasm", service.Config.ComposerAddress)
 	if err != nil {
 		log.Printf("ошибка при скачивании %s ...", err)
 	}
-	jsPath, err = service.Storage.DownloadFile(design.ID, "js", service.Config.ComposerAddress)
+	jsPath, err = service.Storage.DownloadFile(design, "js", service.Config.ComposerAddress)
 	if err != nil {
 		log.Printf("ошибка при скачивании %s ...", err)
 	}

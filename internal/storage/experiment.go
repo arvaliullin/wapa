@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/arvaliullin/wapa/internal/domain"
 )
 
 type ExperimentStorage struct {
@@ -27,18 +29,38 @@ func NewExperimentStorage(baseDir string) (*ExperimentStorage, error) {
 
 func (s *ExperimentStorage) ExperimentDir(id string) (string, error) {
 	dir := filepath.Join(s.DataDirStorage, id)
-	_, err := os.Stat(dir)
-	return dir, err
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return "", fmt.Errorf("не удалось создать директорию эксперимента: %v", err)
+	}
+	return dir, nil
 }
 
-// DownloadFile скачивает файл и сохраняет его в локальное хранилище
-func (s *ExperimentStorage) DownloadFile(id, filetype, apiUrl string) (string, error) {
+// DownloadFile скачивает файл и сохраняет его в локальное хранилище в папке эксперимента
+func (s *ExperimentStorage) DownloadFile(design domain.DesignPayload, filetype, apiUrl string) (string, error) {
+	id := design.ID
+
 	if id == "" || filetype == "" || apiUrl == "" {
 		return "", fmt.Errorf("все параметры (id, type, apiUrl) обязательны для скачивания файла")
 	}
 
 	url := fmt.Sprintf("%s/api/design/%s/files/%s", apiUrl, id, filetype)
-	filePath := filepath.Join(s.DataDirStorage, fmt.Sprintf("%s.%s", id, filetype))
+
+	expDir, err := s.ExperimentDir(id)
+	if err != nil {
+		log.Printf("Ошибка при создании каталога эксперимента: %v", err)
+		return "", err
+	}
+
+	filePath := filepath.Join(expDir, filetype)
+
+	if filetype == "js" {
+		filePath = filepath.Join(expDir, design.JS)
+	}
+
+	if filetype == "wasm" {
+		filePath = filepath.Join(expDir, design.Wasm)
+	}
 
 	log.Printf("Начало загрузки файла: %s", url)
 
@@ -79,17 +101,26 @@ func (s *ExperimentStorage) DeleteFile(filePath string) error {
 	return nil
 }
 
-// CleanUp удаляет все файлы из хранилища
+// CleanUp удаляет все файлы и папки из хранилища (рекурсивно)
 func (s *ExperimentStorage) CleanUp() error {
 	files, err := os.ReadDir(s.DataDirStorage)
 	if err != nil {
 		log.Printf("Ошибка при очистке временного хранилища: %v", err)
 		return fmt.Errorf("не удалось очистить временное хранилище")
 	}
-	log.Printf("Найдено %d файлов для удаления", len(files))
+	log.Printf("Найдено %d каталог(ов) для удаления", len(files))
 	for _, file := range files {
 		filePath := filepath.Join(s.DataDirStorage, file.Name())
-		_ = s.DeleteFile(filePath)
+		if file.IsDir() {
+			err := os.RemoveAll(filePath)
+			if err != nil {
+				log.Printf("Ошибка при удалении каталога %s: %v", filePath, err)
+			} else {
+				log.Printf("Каталог успешно удалён: %s", filePath)
+			}
+		} else {
+			_ = s.DeleteFile(filePath)
+		}
 	}
 	log.Printf("Очистка хранилища завершена")
 	return nil
