@@ -26,4 +26,14 @@ test-rust:
 	--show-output \
 	--export-json '$(HYPERFINE_RESULT_RUST)'
 
-.PHONY: test-cpp test-go test-rust
+
+TASK_JSON_JS := $(shell cat test/data/js/task.json | tr -d '\n')
+HYPERFINE_RESULT_JS := test/data/js/hyperfine.json
+test-js:
+	@echo '=== Benchmarking JS ==='
+	TASK_JSON='$(TASK_JSON_JS)' \
+	hyperfine --runs 100 'bun ./scripts/runner/js.js' \
+	--show-output \
+	--export-json '$(HYPERFINE_RESULT_JS)'
+
+.PHONY: test-cpp test-go test-rust test-js
