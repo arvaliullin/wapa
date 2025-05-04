@@ -13,11 +13,11 @@
             ]
         },
         {
-            "function": "x2Integrate",
+            "function": "x2IntegrateMock",
             "args": [
                 0,
-                50,
-                5000
+                100,
+                10000
             ]
         }
     ]

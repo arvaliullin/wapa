@@ -2,17 +2,6 @@ mod utils;
 
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, wapa-integrate-rs!");
-}
-
-
 fn f(x: f64) -> f64 {
     x * x
 }
@@ -29,4 +18,10 @@ pub extern "C" fn x2Integrate(xmin: f64, xmax: f64, intervals_count: i32) -> f64
     }
 
     total
+}
+
+
+#[wasm_bindgen]
+pub extern "C" fn x2IntegrateMock(_xmin: f64, _xmax: f64, _intervals_count: i32) -> f64 {
+    0.0
 }

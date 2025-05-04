@@ -129,3 +129,21 @@ FROM
     composer.function_result fr
     INNER JOIN composer.experiment e ON fr.experiment_id = e.id
     INNER JOIN composer.design d ON e.design_id = d.id;
+
+CREATE OR REPLACE VIEW composer.metric_full_view AS
+SELECT
+    m.id AS metric_id,
+    d.name AS experiment_name,
+    d.lang AS language,
+    fr.function_name,
+    fr.args,
+    fr.repeats,
+    e.arch,
+    m.mean,
+    m.min,
+    m.max
+FROM
+    composer.metric m
+    INNER JOIN composer.function_result fr ON m.function_result_id = fr.id
+    INNER JOIN composer.experiment e ON fr.experiment_id = e.id
+    INNER JOIN composer.design d ON e.design_id = d.id;
