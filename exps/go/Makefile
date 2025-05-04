@@ -24,5 +24,5 @@ experiment-start:
 	python3 scripts/experiment-start.py \
 		--endpoint http://localhost:8080/api \
 		--name go_exps \
-		--repeats 100 \
+		--repeats 10 \
 		--warmup
