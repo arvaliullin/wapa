@@ -19,7 +19,7 @@ experiment-start:
 	python3 scripts/experiment-start.py \
 		--endpoint http://localhost:8080/api \
 		--name js_exps \
-		--repeats 1000 \
+		--repeats 10 \
 		--warmup
 clean:
 	@echo "Очистка сгенерированных файлов... (clean)"
