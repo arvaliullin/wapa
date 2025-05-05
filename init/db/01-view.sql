@@ -1,149 +1,85 @@
--- 1. Зависимость времени выполнения от языка реализации
-CREATE OR REPLACE VIEW composer.v_mean_time_by_lang AS
-SELECT
-    d.lang,
-    AVG(m.mean)   AS avg_mean_time,
-    AVG(m.median) AS avg_median_time,
-    COUNT(*)      AS num_experiments
-FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-JOIN composer.design d ON e.design_id = d.id
-GROUP BY d.lang;
-
--- 2. Зависимость времени выполнения от архитектуры платформы
-CREATE OR REPLACE VIEW composer.v_mean_time_by_arch AS
-SELECT
+CREATE OR REPLACE VIEW composer.vw_func_metrics_by_arch_lang AS
+SELECT 
     e.arch,
-    AVG(m.mean)   AS avg_mean_time,
-    AVG(m.median) AS avg_median_time,
-    COUNT(*)      AS num_experiments
-FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-GROUP BY e.arch;
-
--- 3. Зависимость времени выполнения от типа реализации (WASM или JS)
-CREATE OR REPLACE VIEW composer.v_mean_time_by_js_wasm AS
-SELECT
+    fr.function_name AS name,
     d.lang,
-    CASE 
-        WHEN d.wasm IS NULL THEN 'js'
-        ELSE 'wasm'
-    END AS implementation_type,
-    AVG(m.mean)   AS avg_mean_time,
-    AVG(m.median) AS avg_median_time,
-    COUNT(*)      AS num_experiments
+    AVG(m.mean) AS mean,
+    AVG(m.stddev) AS stddev,
+    AVG(m.median) AS median,
+    AVG(m.min) AS min,
+    AVG(m.max) AS max,
+    AVG(m.user_time) AS user_time,
+    AVG(m.system) AS system
 FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-JOIN composer.design d ON e.design_id = d.id
-GROUP BY d.lang, implementation_type;
+JOIN composer.function_result fr ON fr.id = m.function_result_id
+JOIN composer.experiment e ON e.id = fr.experiment_id
+JOIN composer.design d ON d.id = e.design_id
+GROUP BY e.arch, fr.function_name, d.lang;
 
-CREATE OR REPLACE VIEW composer.v_js_wasm_speedup AS
-WITH perf AS (
+CREATE OR REPLACE VIEW composer.vw_mock_func_metrics_by_arch_lang AS
+SELECT 
+    e.arch,
+    fr.function_name AS name,
+    d.lang,
+    AVG(m.mean) AS mean,
+    AVG(m.stddev) AS stddev,
+    AVG(m.median) AS median,
+    AVG(m.min) AS min,
+    AVG(m.max) AS max,
+    AVG(m.user_time) AS user_time,
+    AVG(m.system) AS system
+FROM composer.metric m
+JOIN composer.function_result fr ON fr.id = m.function_result_id
+JOIN composer.experiment e ON e.id = fr.experiment_id
+JOIN composer.design d ON d.id = e.design_id
+WHERE fr.function_name LIKE '%Mock'
+GROUP BY e.arch, fr.function_name, d.lang;
+
+CREATE OR REPLACE VIEW composer.vw_func_delta_metrics_mock_by_arch_lang AS
+SELECT
+    orig.arch,
+    'd' || orig.name || 'Mock' AS name,
+    orig.lang,
+    ABS(orig.mean - mock.mean) AS d_mean,
+    ABS(orig.median - mock.median) AS d_median,
+    ABS(orig.stddev - mock.stddev) AS d_stddev,
+    ABS(orig.min - mock.min) AS d_min,
+    ABS(orig.max - mock.max) AS d_max,
+    ABS(orig.user_time - mock.user_time) AS d_user_time,
+    ABS(orig.system - mock.system) AS d_system
+FROM composer.vw_func_metrics_by_arch_lang orig
+JOIN composer.vw_mock_func_metrics_by_arch_lang mock 
+  ON orig.arch = mock.arch
+     AND orig.lang = mock.lang
+     AND orig.name || 'Mock' = mock.name
+WHERE orig.name NOT LIKE '%Mock';
+
+CREATE OR REPLACE VIEW composer.vw_fastest_functions_by_arch_lang AS
+SELECT *
+FROM (
     SELECT
+        e.arch,
         fr.function_name,
-        fr.args,
-        CASE WHEN d.wasm IS NULL THEN 'js' ELSE 'wasm' END AS implementation_type,
-        AVG(m.mean) AS avg_mean_time
+        d.lang,
+        AVG(m.mean) AS mean,
+        ROW_NUMBER() OVER (PARTITION BY e.arch, d.lang ORDER BY AVG(m.mean)) AS rn
     FROM composer.metric m
-    JOIN composer.function_result fr ON m.function_result_id = fr.id
-    JOIN composer.experiment e ON fr.experiment_id = e.id
-    JOIN composer.design d ON e.design_id = d.id
-    GROUP BY fr.function_name, fr.args, implementation_type
-)
-SELECT
-    js.function_name,
-    js.args,
-    js.avg_mean_time AS js_mean_time,
-    wasm.avg_mean_time AS wasm_mean_time,
-    CASE WHEN wasm.avg_mean_time IS NOT NULL AND wasm.avg_mean_time != 0
-         THEN js.avg_mean_time / wasm.avg_mean_time
-         ELSE NULL
-    END AS speedup
-FROM perf js
-JOIN perf wasm
-    ON js.function_name = wasm.function_name
-    AND js.args = wasm.args
-    AND js.implementation_type = 'js'
-    AND wasm.implementation_type = 'wasm'
-ORDER BY js.function_name, js.args;
+    JOIN composer.function_result fr ON fr.id = m.function_result_id
+    JOIN composer.experiment e ON e.id = fr.experiment_id
+    JOIN composer.design d ON d.id = e.design_id
+    GROUP BY e.arch, fr.function_name, d.lang
+) t
+WHERE rn <= 5;
 
--- 5. Совместное влияние языка и архитектуры
-CREATE OR REPLACE VIEW composer.v_time_by_lang_arch AS
+CREATE OR REPLACE VIEW composer.vw_func_dispersion_by_arch_lang AS
 SELECT
-    d.lang,
     e.arch,
-    AVG(m.mean)   AS avg_mean_time,
-    AVG(m.median) AS avg_median_time,
-    COUNT(*)      AS num_experiments
-FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-JOIN composer.design d ON e.design_id = d.id
-GROUP BY d.lang, e.arch
-ORDER BY d.lang, e.arch;
-
--- 6. Стабильность (разброс значений во времени)
-CREATE OR REPLACE VIEW composer.v_func_stability AS
-SELECT
-    d.name AS experiment_design,
     fr.function_name,
-    AVG(m.stddev) AS avg_stddev,
-    AVG(m.mean)   AS avg_mean,
-    (AVG(m.stddev) / NULLIF(AVG(m.mean),0)) AS rel_variation, -- относительная вариация (чем меньше, тем стабильнее)
-    COUNT(*) AS num_measurements
-FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-JOIN composer.design d ON e.design_id = d.id
-GROUP BY d.name, fr.function_name
-ORDER BY rel_variation;
-
--- 7. Сравнение производительности разных языков на одной задаче и одних аргументах
-CREATE OR REPLACE VIEW composer.v_lang_compare_per_task AS
-SELECT
-    fr.function_name,
-    fr.args,
     d.lang,
-    AVG(m.mean) AS avg_mean_time
+    MIN(m.min) AS abs_min,
+    MAX(m.max) AS abs_max
 FROM composer.metric m
-JOIN composer.function_result fr ON m.function_result_id = fr.id
-JOIN composer.experiment e ON fr.experiment_id = e.id
-JOIN composer.design d ON e.design_id = d.id
-GROUP BY fr.function_name, fr.args, d.lang
-ORDER BY fr.function_name, fr.args, avg_mean_time;
-
-CREATE OR REPLACE VIEW composer.function_result_full AS
-SELECT
-    fr.id AS function_result_id,
-    fr.function_name,
-    fr.args,
-    fr.repeats,
-    d.name AS design_name,
-    d.lang AS design_lang,
-    e.hostname AS experiment_hostname,
-    e.arch AS experiment_arch
-FROM
-    composer.function_result fr
-    INNER JOIN composer.experiment e ON fr.experiment_id = e.id
-    INNER JOIN composer.design d ON e.design_id = d.id;
-
-CREATE OR REPLACE VIEW composer.metric_full_view AS
-SELECT
-    m.id AS metric_id,
-    d.name AS experiment_name,
-    d.lang AS language,
-    fr.function_name,
-    fr.args,
-    fr.repeats,
-    e.arch,
-    m.mean,
-    m.min,
-    m.max
-FROM
-    composer.metric m
-    INNER JOIN composer.function_result fr ON m.function_result_id = fr.id
-    INNER JOIN composer.experiment e ON fr.experiment_id = e.id
-    INNER JOIN composer.design d ON e.design_id = d.id;
+JOIN composer.function_result fr ON fr.id = m.function_result_id
+JOIN composer.experiment e ON e.id = fr.experiment_id
+JOIN composer.design d ON d.id = e.design_id
+GROUP BY e.arch, fr.function_name, d.lang;
