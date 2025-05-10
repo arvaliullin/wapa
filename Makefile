@@ -11,7 +11,7 @@ up:
 	docker-compose up --build --force-recreate
 
 down:
-	docker-compose down -v --rmi all
+	docker-compose down
 
 db:
 	docker-compose up database --build --force-recreate
@@ -33,7 +33,8 @@ export PGPORT=$(DB_PORT)
 export PGDATABASE=$(DB_NAME)
 
 export-db:
-	docker-compose exec -T database pg_dump -U $(DB_USER) $(DB_NAME) > out/db_dump.sql
+	- mkdir -p out
+	- docker-compose exec -T database pg_dump -U $(DB_USER) $(DB_NAME) > out/db_dump.sql
 
 import-db:
 	cat out/db_dump.sql | docker-compose exec -T database psql -U $(DB_USER) $(DB_NAME)
