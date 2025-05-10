@@ -1,12 +1,6 @@
 include scripts/makefiles/testing.mk
 include scripts/makefiles/arm.mk
 
-sub:
-	go run github.com/arvaliullin/wapa/examples/sub
-
-pub:
-	go run github.com/arvaliullin/wapa/examples/pub
-
 swag:
 	swag init -g cmd/composer/main.go
 
@@ -17,7 +11,7 @@ up:
 	docker-compose up --build --force-recreate
 
 down:
-	docker-compose down
+	docker-compose down -v --rmi all
 
 db:
 	docker-compose up database --build --force-recreate
