@@ -29,7 +29,8 @@ func RegisterBenchmarkHandler(
 	e.GET("/api/benchmark-diff", handler.GetBenchmarkDiff)
 	e.GET("/api/benchmark/all", handler.GetAllBenchmarkResults)
 	e.GET("/api/benchmark-diff/all", handler.GetAllBenchmarkDiffs)
-
+	e.GET("/api/benchmark/mock", handler.GetBenchmarksOnlyMock)
+	e.GET("/api/benchmark/not-mock", handler.GetBenchmarksOnlyNotMock)
 }
 
 // GetBenchmarkResults возвращает результаты бенчмарков для заданной метрики и архитектуры.
@@ -211,4 +212,80 @@ func (h *BenchmarkHandler) GetAllBenchmarkDiffs(c echo.Context) error {
 		}
 	}
 	return c.JSON(http.StatusOK, allDiffs)
+}
+
+// GetBenchmarksOnlyMock возвращает только те кейсы, имя которых заканчивается на "Mock".
+//
+// @Summary      Получить результаты только Mock-функций
+// @Description  Возвращает только бенчмарки с постфиксом Mock в имени функции.
+// @Tags         Benchmark
+// @Produce      json
+// @Param        metric  query     string true  "Метрика (mean, median, stddev, min, max)"
+// @Param        arch    query     string true  "Архитектура (arm64, amd64)"
+// @Success      200     {object}  domain.BenchmarkResults
+// @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
+// @Failure      404     {object}  object "Данные не найдены"
+// @Failure      500     {object}  object "Внутренняя ошибка сервера"
+// @Router       /api/benchmark/mock [get]
+func (h *BenchmarkHandler) GetBenchmarksOnlyMock(c echo.Context) error {
+	metric := c.QueryParam("metric")
+	arch := c.QueryParam("arch")
+
+	if metric == "" || arch == "" {
+		return c.JSON(http.StatusBadRequest, struct {
+			Error string `json:"error"`
+		}{Error: "parameters 'metric' and 'arch' are required"})
+	}
+
+	results, err := h.BenchmarkRepo.GetBenchmarksOnlyMock(metric, arch)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, struct {
+				Error string `json:"error"`
+			}{Error: "results not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, struct {
+			Error string `json:"error"`
+		}{Error: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, results)
+}
+
+// GetBenchmarksOnlyNotMock возвращает только те кейсы, имя которых НЕ заканчивается на "Mock".
+//
+// @Summary      Получить результаты только "реальных" функций (без Mock)
+// @Description  Возвращает только бенчмарки без постфикса Mock в имени функции.
+// @Tags         Benchmark
+// @Produce      json
+// @Param        metric  query     string true  "Метрика (mean, median, stddev, min, max)"
+// @Param        arch    query     string true  "Архитектура (arm64, amd64)"
+// @Success      200     {object}  domain.BenchmarkResults
+// @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
+// @Failure      404     {object}  object "Данные не найдены"
+// @Failure      500     {object}  object "Внутренняя ошибка сервера"
+// @Router       /api/benchmark/not-mock [get]
+func (h *BenchmarkHandler) GetBenchmarksOnlyNotMock(c echo.Context) error {
+	metric := c.QueryParam("metric")
+	arch := c.QueryParam("arch")
+
+	if metric == "" || arch == "" {
+		return c.JSON(http.StatusBadRequest, struct {
+			Error string `json:"error"`
+		}{Error: "parameters 'metric' and 'arch' are required"})
+	}
+
+	results, err := h.BenchmarkRepo.GetBenchmarksOnlyNotMock(metric, arch)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, struct {
+				Error string `json:"error"`
+			}{Error: "results not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, struct {
+			Error string `json:"error"`
+		}{Error: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, results)
 }

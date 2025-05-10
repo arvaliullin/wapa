@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/arvaliullin/wapa/internal/domain"
 )
@@ -12,6 +13,8 @@ import (
 type BenchmarkRepositoryContract interface {
 	GetBenchmarkResults(metric string, arch string) (domain.BenchmarkResults, error)
 	GetAllBenchmarkResults() ([]domain.BenchmarkResults, error)
+	GetBenchmarksOnlyMock(metric, arch string) (domain.BenchmarkResults, error)
+	GetBenchmarksOnlyNotMock(metric, arch string) (domain.BenchmarkResults, error)
 }
 
 type BenchmarkRepository struct {
@@ -100,4 +103,34 @@ func (repo *BenchmarkRepository) GetAllBenchmarkResults() ([]domain.BenchmarkRes
 		}
 	}
 	return allResults, nil
+}
+
+func (repo *BenchmarkRepository) GetBenchmarksOnlyMock(metric, arch string) (domain.BenchmarkResults, error) {
+	full, err := repo.GetBenchmarkResults(metric, arch)
+	if err != nil {
+		return full, err
+	}
+	var filtered []domain.BenchmarkCase
+	for _, c := range full.Results {
+		if strings.HasSuffix(c.Name, "Mock") {
+			filtered = append(filtered, c)
+		}
+	}
+	full.Results = filtered
+	return full, nil
+}
+
+func (repo *BenchmarkRepository) GetBenchmarksOnlyNotMock(metric, arch string) (domain.BenchmarkResults, error) {
+	full, err := repo.GetBenchmarkResults(metric, arch)
+	if err != nil {
+		return full, err
+	}
+	var filtered []domain.BenchmarkCase
+	for _, c := range full.Results {
+		if !strings.HasSuffix(c.Name, "Mock") {
+			filtered = append(filtered, c)
+		}
+	}
+	full.Results = filtered
+	return full, nil
 }

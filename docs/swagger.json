@@ -170,6 +170,114 @@
                 }
             }
         },
+        "/api/benchmark/mock": {
+            "get": {
+                "description": "Возвращает только бенчмарки с постфиксом Mock в имени функции.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить результаты только Mock-функций",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Метрика (mean, median, stddev, min, max)",
+                        "name": "metric",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Архитектура (arm64, amd64)",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.BenchmarkResults"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе из-за отсутствия параметров",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Данные не найдены",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/benchmark/not-mock": {
+            "get": {
+                "description": "Возвращает только бенчмарки без постфикса Mock в имени функции.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить результаты только \"реальных\" функций (без Mock)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Метрика (mean, median, stddev, min, max)",
+                        "name": "metric",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Архитектура (arm64, amd64)",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.BenchmarkResults"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе из-за отсутствия параметров",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Данные не найдены",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/design": {
             "post": {
                 "description": "Создает новый эксперимент и загружает связанные файлы (JS и/или Wasm)",
