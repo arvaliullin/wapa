@@ -22,6 +22,6 @@ tests:
 	go test -v ./...
 
 env:
-	- python -m venv env
+	- python3 -m venv env
 
 .PHONY: build up db tests down
