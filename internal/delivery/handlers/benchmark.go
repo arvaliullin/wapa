@@ -27,6 +27,8 @@ func RegisterBenchmarkHandler(
 
 	e.GET("/api/benchmark", handler.GetBenchmarkResults)
 	e.GET("/api/benchmark-diff", handler.GetBenchmarkDiff)
+	e.GET("/api/benchmark/all", handler.GetAllBenchmarkResults)
+	e.GET("/api/benchmark-diff/all", handler.GetAllBenchmarkDiffs)
 
 }
 
@@ -136,4 +138,77 @@ func (h *BenchmarkHandler) GetBenchmarkDiff(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, diff)
+}
+
+// GetAllBenchmarkResults возвращает массив всех BenchmarkResults по всем архитектурам и метрикам.
+//
+// @Summary      Получить результаты бенчмарков по всем архитектурам и метрикам
+// @Description  Возвращает массив всех результатов бенчмарков по всем архитектурам (например, amd64, arm64) и всем метрикам (mean, median, stddev, min, max).
+// @Tags         Benchmark
+// @Produce      json
+// @Success      200     {array}   domain.BenchmarkResults
+// @Failure      500     {object}  object "Внутренняя ошибка сервера"
+// @Router       /api/benchmark/all [get]
+func (h *BenchmarkHandler) GetAllBenchmarkResults(c echo.Context) error {
+	results, err := h.BenchmarkRepo.GetAllBenchmarkResults()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, struct {
+			Error string `json:"error"`
+		}{Error: err.Error()})
+	}
+	return c.JSON(http.StatusOK, results)
+}
+
+// GetAllBenchmarkDiffs возвращает все дифференциалы по всем архитектурам и метрикам
+//
+// @Summary      Получить разницу между функцией и Mock по всем архитектурам и метрикам
+// @Description  Возвращает массив разниц по каждому языку между функцией и её Mock-версией для всех архитектур и метрик (например, d_factorize = factorize - factorizeMock).
+// @Tags         Benchmark
+// @Produce      json
+// @Success      200     {array}  domain.BenchmarkResults
+// @Failure      500     {object} object "Внутренняя ошибка сервера"
+// @Router       /api/benchmark-diff/all [get]
+func (h *BenchmarkHandler) GetAllBenchmarkDiffs(c echo.Context) error {
+	allResults, err := h.BenchmarkRepo.GetAllBenchmarkResults()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, struct {
+			Error string `json:"error"`
+		}{Error: err.Error()})
+	}
+
+	var allDiffs []domain.BenchmarkResults
+	for _, results := range allResults {
+		realCases := make(map[string]domain.BenchmarkCase)
+		mockCases := make(map[string]domain.BenchmarkCase)
+		for _, item := range results.Results {
+			if strings.HasSuffix(item.Name, "Mock") {
+				mockCases[strings.TrimSuffix(item.Name, "Mock")] = item
+			} else {
+				realCases[item.Name] = item
+			}
+		}
+
+		var diffResults []domain.BenchmarkCase
+		for name, real := range realCases {
+			mock, ok := mockCases[name]
+			if !ok {
+				continue
+			}
+			diffResults = append(diffResults, domain.BenchmarkCase{
+				Name:       "d_" + name,
+				Go:         real.Go - mock.Go,
+				Cpp:        real.Cpp - mock.Cpp,
+				Rust:       real.Rust - mock.Rust,
+				Javascript: real.Javascript - mock.Javascript,
+			})
+		}
+		if len(diffResults) > 0 {
+			allDiffs = append(allDiffs, domain.BenchmarkResults{
+				Arch:    results.Arch,
+				Metric:  results.Metric,
+				Results: diffResults,
+			})
+		}
+	}
+	return c.JSON(http.StatusOK, allDiffs)
 }

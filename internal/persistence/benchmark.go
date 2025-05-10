@@ -11,6 +11,7 @@ import (
 
 type BenchmarkRepositoryContract interface {
 	GetBenchmarkResults(metric string, arch string) (domain.BenchmarkResults, error)
+	GetAllBenchmarkResults() ([]domain.BenchmarkResults, error)
 }
 
 type BenchmarkRepository struct {
@@ -63,4 +64,40 @@ func (repo *BenchmarkRepository) GetBenchmarkResults(metric string, arch string)
 	})
 
 	return results, err
+}
+
+func (repo *BenchmarkRepository) GetAllBenchmarkResults() ([]domain.BenchmarkResults, error) {
+	metrics := []string{"mean", "median", "min", "max", "stddev"}
+	var allResults []domain.BenchmarkResults
+
+	for _, metric := range metrics {
+		view, err := mapMetricView(metric)
+		if err != nil {
+			return nil, err
+		}
+		err = WithConnection(repo.DbConnection, func(conn *sql.DB) error {
+			rows, err := conn.Query(fmt.Sprintf(`SELECT data FROM %s`, view))
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				var dataBytes []byte
+				if err := rows.Scan(&dataBytes); err != nil {
+					return err
+				}
+				var results domain.BenchmarkResults
+				if err := json.Unmarshal(dataBytes, &results); err != nil {
+					return err
+				}
+				allResults = append(allResults, results)
+			}
+			return rows.Err()
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return allResults, nil
 }

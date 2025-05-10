@@ -123,6 +123,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/benchmark-diff/all": {
+            "get": {
+                "description": "Возвращает массив разниц по каждому языку между функцией и её Mock-версией для всех архитектур и метрик (например, d_factorize = factorize - factorizeMock).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить разницу между функцией и Mock по всем архитектурам и метрикам",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.BenchmarkResults"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/benchmark/all": {
+            "get": {
+                "description": "Возвращает массив всех результатов бенчмарков по всем архитектурам (например, amd64, arm64) и всем метрикам (mean, median, stddev, min, max).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить результаты бенчмарков по всем архитектурам и метрикам",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.BenchmarkResults"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/design": {
             "post": {
                 "description": "Создает новый эксперимент и загружает связанные файлы (JS и/или Wasm)",
