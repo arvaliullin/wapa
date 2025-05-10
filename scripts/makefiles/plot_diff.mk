@@ -41,4 +41,3 @@ plot-diff-box-arm64-mean:
 
 choice:
 	python scripts/choice_data.py --arch arm64
-
