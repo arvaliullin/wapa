@@ -1,0 +1,27 @@
+{
+    "metric": "mean", // имя метрики из composer.metric
+    "arch": "amd64", // значение arch из composer.experiment 
+    "results": [
+        {
+            "name": "x2Integrate", //function_name из  composer.function_result
+            "cpp": 0.03, // значение метрики из composer.metric для языка c++, в этом случае среднее значнеие
+            "go": 0.03,
+            "rust": 0.03,
+            "javascript": 0.03
+        },
+        {
+            "name": "x2IntegrateMock",
+            "сpp": 0.03,
+            "go": 0.03,
+            "rust": 0.03,
+            "javascript": 0.03
+        },
+        {
+            "name": "factorize",
+            "cpp": 0.03,
+            "go": 0.03,
+            "rust": 0.03,
+            "javascript": 0.03
+        }
+    ]
+}
