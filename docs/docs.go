@@ -15,6 +15,114 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/benchmark": {
+            "get": {
+                "description": "Получает результаты по заданной метрике (mean, median, stddev, min, max) и архитектуре (например, arm64, amd64)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить результаты бенчмарков",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Метрика (mean, median, stddev, min, max)",
+                        "name": "metric",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Архитектура (arm64, amd64)",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.BenchmarkResults"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе из-за отсутствия параметров",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Данные не найдены",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/benchmark-diff": {
+            "get": {
+                "description": "Возвращает разницу по каждому языку между функцией и её Mock-версией (например, d_factorize = factorize - factorizeMock)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить разницу между функцией и Mock",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Метрика (mean, median, stddev, min, max)",
+                        "name": "metric",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Архитектура (arm64, amd64)",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.BenchmarkResults"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе из-за отсутствия параметров",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Данные не найдены",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/design": {
             "post": {
                 "description": "Создает новый эксперимент и загружает связанные файлы (JS и/или Wasm)",
@@ -255,6 +363,50 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.BenchmarkCase": {
+            "type": "object",
+            "properties": {
+                "cpp": {
+                    "type": "number",
+                    "example": 0.1728
+                },
+                "go": {
+                    "type": "number",
+                    "example": 0.6173
+                },
+                "javascript": {
+                    "type": "number",
+                    "example": 0.1379
+                },
+                "name": {
+                    "type": "string",
+                    "example": "fibonacciIterative"
+                },
+                "rust": {
+                    "type": "number",
+                    "example": 0.1417
+                }
+            }
+        },
+        "domain.BenchmarkResults": {
+            "type": "object",
+            "properties": {
+                "arch": {
+                    "type": "string",
+                    "example": "arm64"
+                },
+                "metric": {
+                    "type": "string",
+                    "example": "median"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.BenchmarkCase"
+                    }
+                }
+            }
+        },
         "domain.Design": {
             "type": "object",
             "properties": {

@@ -59,6 +59,10 @@ func (service *ComposerService) Run() {
 			designRepo,
 			service.DesignPublisher)
 
+		benchmarkRepo := &persistence.BenchmarkRepository{DbConnection: service.Config.DbConnection}
+
+		handlers.RegisterBenchmarkHandler(service.HttpService, benchmarkRepo)
+
 		service.HttpService.Start(service.Config.Address)
 	}()
 

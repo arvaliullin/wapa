@@ -10,3 +10,19 @@ type Metrics struct {
 	Min    float64 `json:"min" example:"0.03685800000312156"`
 	Max    float64 `json:"max" example:"2.5455180000026303"`
 }
+
+// BenchmarkResults описывает результаты замеров производительности для набора тестовых задач
+type BenchmarkResults struct {
+	Arch    string          `json:"arch" example:"arm64"`
+	Metric  string          `json:"metric" example:"median"`
+	Results []BenchmarkCase `json:"results"`
+}
+
+// BenchmarkCase отражает измерения по одной задаче на разных языках
+type BenchmarkCase struct {
+	Name       string  `json:"name" example:"fibonacciIterative"`
+	Go         float64 `json:"go" example:"0.6173"`
+	Cpp        float64 `json:"cpp" example:"0.1728"`
+	Rust       float64 `json:"rust" example:"0.1417"`
+	Javascript float64 `json:"javascript" example:"0.1379"`
+}

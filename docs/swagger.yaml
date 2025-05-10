@@ -1,4 +1,35 @@
 definitions:
+  domain.BenchmarkCase:
+    properties:
+      cpp:
+        example: 0.1728
+        type: number
+      go:
+        example: 0.6173
+        type: number
+      javascript:
+        example: 0.1379
+        type: number
+      name:
+        example: fibonacciIterative
+        type: string
+      rust:
+        example: 0.1417
+        type: number
+    type: object
+  domain.BenchmarkResults:
+    properties:
+      arch:
+        example: arm64
+        type: string
+      metric:
+        example: median
+        type: string
+      results:
+        items:
+          $ref: '#/definitions/domain.BenchmarkCase'
+        type: array
+    type: object
   domain.Design:
     properties:
       functions:
@@ -46,6 +77,80 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/benchmark:
+    get:
+      description: Получает результаты по заданной метрике (mean, median, stddev,
+        min, max) и архитектуре (например, arm64, amd64)
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить результаты бенчмарков
+      tags:
+      - Benchmark
+  /api/benchmark-diff:
+    get:
+      description: Возвращает разницу по каждому языку между функцией и её Mock-версией
+        (например, d_factorize = factorize - factorizeMock)
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить разницу между функцией и Mock
+      tags:
+      - Benchmark
   /api/design:
     post:
       consumes:
