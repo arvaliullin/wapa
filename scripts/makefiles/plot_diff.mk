@@ -38,3 +38,6 @@ plot-diff-box-amd64-mean:
 
 plot-diff-box-arm64-mean:
 	python scripts/plot_diff.py --arch arm64 --metric mean --compare func --plot-type box
+
+choice:
+	python scripts/choice_data.py --cv-threshold 0.15 --output reliable_points.csv
