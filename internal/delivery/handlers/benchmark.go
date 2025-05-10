@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"math"
 	"net/http"
 	"strings"
 
@@ -125,10 +126,10 @@ func (h *BenchmarkHandler) GetBenchmarkDiff(c echo.Context) error {
 		}
 		diffResults = append(diffResults, domain.BenchmarkCase{
 			Name:       "d_" + name,
-			Go:         real.Go - mock.Go,
-			Cpp:        real.Cpp - mock.Cpp,
-			Rust:       real.Rust - mock.Rust,
-			Javascript: real.Javascript - mock.Javascript,
+			Go:         math.Abs(real.Go - mock.Go),
+			Cpp:        math.Abs(real.Cpp - mock.Cpp),
+			Rust:       math.Abs(real.Rust - mock.Rust),
+			Javascript: math.Abs(real.Javascript - mock.Javascript),
 		})
 	}
 
@@ -197,10 +198,10 @@ func (h *BenchmarkHandler) GetAllBenchmarkDiffs(c echo.Context) error {
 			}
 			diffResults = append(diffResults, domain.BenchmarkCase{
 				Name:       "d_" + name,
-				Go:         real.Go - mock.Go,
-				Cpp:        real.Cpp - mock.Cpp,
-				Rust:       real.Rust - mock.Rust,
-				Javascript: real.Javascript - mock.Javascript,
+				Go:         math.Abs(real.Go - mock.Go),
+				Cpp:        math.Abs(real.Cpp - mock.Cpp),
+				Rust:       math.Abs(real.Rust - mock.Rust),
+				Javascript: math.Abs(real.Javascript - mock.Javascript),
 			})
 		}
 		if len(diffResults) > 0 {
