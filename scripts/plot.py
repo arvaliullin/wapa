@@ -1,7 +1,6 @@
 import argparse
 import requests
 import sys
-import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -9,9 +8,6 @@ import pandas as pd
 API_DEFAULT = "http://localhost:8080"
 
 BENCHMARK_ENDPOINTS = {
-    "all": "/api/benchmark/all",
-    "diff": "/api/benchmark-diff/all",
-    "bench": "/api/benchmark",
     "notmock": "/api/benchmark/not-mock",
     "mock": "/api/benchmark/mock",
 }
@@ -31,9 +27,9 @@ def fetch_data(api, endpoint, params=None):
 
 def flatten_results(results):
     """Перевести JSON данные в pandas DataFrame"""
-    rows = []
     if isinstance(results, dict):
         results = [results]
+    rows = []
     for group in results:
         arch = group.get("arch")
         metric = group.get("metric")
@@ -42,10 +38,10 @@ def flatten_results(results):
                 "arch": arch,
                 "metric": metric,
                 "name": r["name"],
-                "go": r["go"],
-                "cpp": r["cpp"],
-                "rust": r["rust"],
-                "javascript": r["javascript"]
+                "go": r.get("go"),
+                "cpp": r.get("cpp"),
+                "rust": r.get("rust"),
+                "javascript": r.get("javascript")
             })
     return pd.DataFrame(rows)
 
@@ -55,123 +51,85 @@ def plot_bar(df, x, y, hue=None, title="", ylabel="", xlabel=""):
     plt.title(title)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
+    plt.xticks(rotation=30)
     plt.tight_layout()
     plt.show()
 
 def plot_box(df, x, y, hue=None, title="", ylabel="", xlabel=""):
-    plt.figure(figsize=(12,6))
+    plt.figure(figsize=(10,6))
     sns.boxplot(data=df, x=x, y=y, hue=hue)
     plt.title(title)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
+    plt.xticks(rotation=30)
     plt.tight_layout()
     plt.show()
 
 def plot_benchmarks(
-    api, 
-    arch=None, 
-    metric=None, 
-    function=None,
-    compare="lang", 
-    endpoint="all"
-):
+        api, 
+        arch, 
+        metric,
+        compare="lang",
+        endpoint="notmock",
+        plot_type="bar"
+    ):
     """
-    compare: могут быть 'lang', 'function', 'arch', 'metric', 'mock'
+    compare: 'lang' — сравнить языки для каждой функции (default)
     """
-    if endpoint == "all":
-        data = fetch_data(api, BENCHMARK_ENDPOINTS["all"])
-    elif endpoint == "diff":
-        data = fetch_data(api, BENCHMARK_ENDPOINTS["diff"])
-    elif endpoint == "bench":
-        data = fetch_data(api, BENCHMARK_ENDPOINTS["bench"], 
-            params={"metric": metric, "arch": arch})
-    elif endpoint == "notmock":
-        data = fetch_data(api, BENCHMARK_ENDPOINTS["notmock"], 
-            params={"metric": metric, "arch": arch})
-    elif endpoint == "mock":
-        data = fetch_data(api, BENCHMARK_ENDPOINTS["mock"], 
-            params={"metric": metric, "arch": arch})
-    else:
+    if endpoint not in BENCHMARK_ENDPOINTS:
         print("Неизвестный endpoint!")
         sys.exit(2)
 
+    data = fetch_data(api, BENCHMARK_ENDPOINTS[endpoint], params={"metric": metric, "arch": arch})
+
     df = flatten_results(data)
 
-    if arch:
-        df = df[df.arch == arch]
-    if metric:
-        df = df[df.metric == metric]
-    if function:
-        df = df[df.name.str.contains(function)]
-    
     if compare == "lang":
-        dfm = df.melt(id_vars=["arch","metric","name"], 
-                      value_vars=["go","cpp","rust","javascript"],
-                      var_name="lang", value_name="time")
-        plot_bar(dfm, x="name", y="time", hue="lang",
-                 title=f"Время выполнения задач ({metric}, {arch})",
-                 ylabel="Время, с", xlabel="Функция")
-    elif compare == "arch":
-        dfm = df.melt(id_vars=["arch","metric","name"],
-                      value_vars=["go","cpp","rust","javascript"],
-                      var_name="lang", value_name="time")
-        plot_bar(dfm, x="arch", y="time", hue="lang",
-                title=f"Сравнение архитектур ({metric})",
-                ylabel="Время, с", xlabel="Архитектура")
-    elif compare == "function":
-        dfm = df.melt(id_vars=["arch","metric","name"],
-                      value_vars=["go","cpp","rust","javascript"],
-                      var_name="lang", value_name="time")
-        plot_bar(dfm, x="name", y="time", hue="arch",
-            title=f"Сравнение функций по архитектурам ({metric})",
-            ylabel="Время, с", xlabel="Функция")
-    elif compare == "metric":
-        dfm = df.melt(id_vars=["arch","metric","name"],
-                      value_vars=["go","cpp","rust","javascript"],
-                      var_name="lang", value_name="time")
-        plot_bar(dfm, x="metric", y="time", hue="lang",
-                 title=f"Сравнение метрик по языкам",
-                 ylabel="Время, с", xlabel="Метрика")
-    elif compare == "mock":
-        dfmock = df[df.name.str.endswith("Mock")]
-        dfnm = df[~df.name.str.endswith("Mock")]
-        for lang in ["go", "cpp", "rust", "javascript"]:
-            plt.figure(figsize=(10,6))
-            plt.bar(dfnm.name, dfnm[lang], label='real')
-            plt.bar(dfmock.name, dfmock[lang], label='mock', alpha=0.7)
-            plt.title(f"Mock vs Not-Mock {lang} ({metric}, {arch})")
-            plt.xlabel("Функция")
-            plt.ylabel("Время, с")
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
+        dfm = df.melt(
+            id_vars=["arch", "metric", "name"], 
+            value_vars=["go", "cpp", "rust", "javascript"],
+            var_name="lang", value_name="time"
+        )
+        if plot_type == "box":
+            plot_box(
+                dfm, x="lang", y="time", hue=None,
+                title=f"Распределение времени по языкам ({metric}, {arch})",
+                ylabel="Время, с", xlabel="Язык"
+            )
+        else:
+            plot_bar(
+                dfm, x="name", y="time", hue="lang",
+                title=f"Сравнение языков по функциям ({metric}, {arch})",
+                ylabel="Время, с", xlabel="Функция"
+            )
     else:
-        print("Неизвестный режим сравнения.")
+        print("Поддерживается только compare=lang для not-mock.")
         sys.exit(3)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Графики для анализа бенчмарков (API wapa)"
+        description="Построение графиков сравнения языков по real-функциям (api /api/benchmark/not-mock)"
     )
     parser.add_argument("--api", default=API_DEFAULT)
-    parser.add_argument("--arch", type=str, help="Архитектура (amd64/arm64)")
-    parser.add_argument("--metric", type=str, help="Метрика (mean/median/min/max/stddev)")
-    parser.add_argument("--function", type=str, help="Функция, фильтр по имени")
-    parser.add_argument("--compare", type=str, default="lang",
-        choices=["lang", "arch", "function", "metric", "mock"], 
-        help="Тип сравнения")
-    parser.add_argument("--endpoint", type=str, default="all",
-        choices=["all", "diff", "bench", "notmock", "mock"], 
-        help="API endpoint")
-    
+    parser.add_argument("--arch", type=str, required=True, help="Архитектура (например amd64/arm64)")
+    parser.add_argument("--metric", type=str, required=True, help="Метрика (mean/median/min/max/stddev)")
+    parser.add_argument("--compare", type=str, default="lang", 
+        choices=["lang"], 
+        help="Вариант сравнения (только 'lang' поддерживается для not-mock)")
+    parser.add_argument("--endpoint", type=str, default="notmock",
+        choices=["notmock", "mock"], 
+        help="API endpoint (по умолчанию only real-funcs)")
+    parser.add_argument("--plot-type", type=str, default="bar",
+        choices=["bar", "box"], help="Тип графика: bar или box")
+
     args = parser.parse_args()
     plot_benchmarks(
         api=args.api,
         arch=args.arch,
         metric=args.metric,
-        function=args.function,
         compare=args.compare,
-        endpoint=args.endpoint
+        endpoint=args.endpoint,
+        plot_type=args.plot_type
     )
 
 if __name__ == "__main__":

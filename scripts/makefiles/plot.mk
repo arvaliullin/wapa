@@ -1,25 +1,22 @@
-.PHONY: plot install-plot-deps
+.PHONY: plot-not-mock install-plot-deps
 
-# Установка python-библиотек
 install-plot-deps:
 	pip install matplotlib seaborn pandas requests
 
-# График: сравнение языков для amd64/mean
-plot-lang-amd64:
-	python scripts/plot.py --arch amd64 --metric mean --compare lang --endpoint all
+plot-not-mock-amd64-mean:
+	python scripts/plot.py --arch amd64 --metric mean --endpoint notmock --compare lang
 
-# Сравнение mock vs не-mock
-plot-mock-vs-real:
-	python scripts/plot.py --arch amd64 --metric mean --compare mock --endpoint all
+plot-not-mock-arm64-mean:
+	python scripts/plot.py --arch arm64 --metric mean --endpoint notmock --compare lang
 
-# Дифф между функциями (diff endpoint)
-plot-diff-functions:
-	python scripts/plot.py --metric mean --compare function --endpoint diff
+plot-not-mock-amd64-median:
+	python scripts/plot.py --arch amd64 --metric median --endpoint notmock --compare lang
 
-# Сравнение языков между архитектурами
-plot-arch:
-	python scripts/plot.py --metric mean --compare arch --endpoint all
+plot-not-mock-arm64-median:
+	python scripts/plot.py --arch arm64 --metric median --endpoint notmock --compare lang
 
-# Коробочные графики распределения по метрикам
-plot-metric-box:
-	python scripts/plot.py --compare metric --endpoint all
+plot-not-mock-box-amd64-mean:
+	python scripts/plot.py --arch amd64 --metric mean --endpoint notmock --compare lang --plot-type box
+
+plot-not-mock-box-arm64-mean:
+	python scripts/plot.py --arch arm64 --metric mean --endpoint notmock --compare lang --plot-type box
