@@ -74,6 +74,17 @@ definitions:
         example: calc
         type: string
     type: object
+  handlers.ReliableBenchmarksResponse:
+    properties:
+      arch:
+        type: string
+      count:
+        type: integer
+      names:
+        items:
+          type: string
+        type: array
+    type: object
 info:
   contact: {}
 paths:
@@ -261,6 +272,46 @@ paths:
           schema:
             type: object
       summary: Получить результаты только "реальных" функций (без Mock)
+      tags:
+      - Benchmark
+  /api/benchmark/reliable:
+    get:
+      description: Возвращает список имён функций, у которых Cv (stddev/mean) для
+        всех языков не превышает заданный порог, по выбранной архитектуре.
+      parameters:
+      - description: Архитектура (amd64, arm64 и т.д.)
+        in: query
+        name: arch
+        required: true
+        type: string
+      - description: Максимально допустимое значение Cv (по умолчанию 0.2)
+        in: query
+        name: cv-threshold
+        type: number
+      - description: Минимальное значение среднего (по умолчанию 1e-12)
+        in: query
+        name: min-mean
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ReliableBenchmarksResponse'
+        "400":
+          description: Ошибка в запросе
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка
+          schema:
+            type: object
+      summary: Получить надёжные функции по коэффициенту вариации
       tags:
       - Benchmark
   /api/design:

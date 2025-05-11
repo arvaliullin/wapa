@@ -5,6 +5,8 @@ import (
 	"errors"
 	"math"
 	"net/http"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/arvaliullin/wapa/internal/delivery"
@@ -32,6 +34,8 @@ func RegisterBenchmarkHandler(
 	e.GET("/api/benchmark-diff/all", handler.GetAllBenchmarkDiffs)
 	e.GET("/api/benchmark/mock", handler.GetBenchmarksOnlyMock)
 	e.GET("/api/benchmark/not-mock", handler.GetBenchmarksOnlyNotMock)
+	e.GET("/api/benchmark/reliable", handler.GetReliableBenchmarks)
+
 }
 
 // GetBenchmarkResults возвращает результаты бенчмарков для заданной метрики и архитектуры.
@@ -289,4 +293,137 @@ func (h *BenchmarkHandler) GetBenchmarksOnlyNotMock(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, results)
+}
+
+// GetReliableBenchmarks выбирает надёжные функции для сравнения по коэффициенту вариации (Cv).
+//
+// @Summary     Получить надёжные функции по коэффициенту вариации
+// @Description Возвращает список имён функций, у которых Cv (stddev/mean) для всех языков не превышает заданный порог, по выбранной архитектуре.
+// @Tags        Benchmark
+// @Produce     json
+// @Param       arch         query string  true  "Архитектура (amd64, arm64 и т.д.)"
+// @Param       cv-threshold query number false "Максимально допустимое значение Cv (по умолчанию 0.2)"
+// @Param       min-mean     query number false "Минимальное значение среднего (по умолчанию 1e-12)"
+// @Success     200 {object} ReliableBenchmarksResponse
+// @Failure     400 {object} object "Ошибка в запросе"
+// @Failure     404 {object} object "Данные не найдены"
+// @Failure     500 {object} object "Внутренняя ошибка"
+// @Router      /api/benchmark/reliable [get]
+func (h *BenchmarkHandler) GetReliableBenchmarks(c echo.Context) error {
+	arch := c.QueryParam("arch")
+	if arch == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "parameter 'arch' is required"})
+	}
+
+	cvThreshold := 0.2
+	minMean := 1e-12
+
+	if s := c.QueryParam("cv-threshold"); s != "" {
+		val, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "cv-threshold is not a float"})
+		}
+		cvThreshold = val
+	}
+	if s := c.QueryParam("min-mean"); s != "" {
+		val, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "min-mean is not a float"})
+		}
+		minMean = val
+	}
+
+	allResults, err := h.BenchmarkRepo.GetAllBenchmarkResults()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return pickReliableBenchmarks(c, arch, cvThreshold, minMean, allResults)
+}
+
+type ReliableBenchmarksResponse struct {
+	Arch  string   `json:"arch"`
+	Count int      `json:"count"`
+	Names []string `json:"names"`
+}
+
+func pickReliableBenchmarks(c echo.Context, arch string, cvThreshold, minMean float64, allResults []domain.BenchmarkResults) error {
+	type LangStat struct {
+		Mean   float64
+		Stddev float64
+	}
+
+	langs := []string{"go", "cpp", "rust", "javascript"}
+	stats := map[string]map[string]LangStat{}
+
+	for _, group := range allResults {
+		if group.Arch != arch {
+			continue
+		}
+		metric := group.Metric
+		for _, bench := range group.Results {
+			name := bench.Name
+			if _, ok := stats[name]; !ok {
+				stats[name] = map[string]LangStat{}
+			}
+			for _, lang := range langs {
+				var value float64
+				switch lang {
+				case "go":
+					value = bench.Go
+				case "cpp":
+					value = bench.Cpp
+				case "rust":
+					value = bench.Rust
+				case "javascript":
+					value = bench.Javascript
+				}
+				if value == 0 && metric == "mean" {
+					continue
+				}
+				s := stats[name][lang]
+				if metric == "mean" {
+					s.Mean = value
+				} else if metric == "stddev" {
+					s.Stddev = value
+				}
+				stats[name][lang] = s
+			}
+		}
+	}
+
+	reliable := []string{}
+
+FUNC_LOOP:
+	for name, perLang := range stats {
+		if len(perLang) != len(langs) {
+			continue
+		}
+		for _, lang := range langs {
+			s := perLang[lang]
+			if s.Mean <= minMean {
+				continue FUNC_LOOP
+			}
+			cv := 0.0
+			if s.Mean != 0 {
+				cv = s.Stddev / s.Mean
+			}
+			if cv > cvThreshold || math.IsNaN(cv) {
+				continue FUNC_LOOP
+			}
+		}
+		reliable = append(reliable, name)
+	}
+	sort.Strings(reliable)
+
+	if len(reliable) == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "No reliable functions for this architecture"})
+	}
+
+	resp := ReliableBenchmarksResponse{
+		Arch:  arch,
+		Count: len(reliable),
+		Names: reliable,
+	}
+	return c.JSON(http.StatusOK, resp)
 }

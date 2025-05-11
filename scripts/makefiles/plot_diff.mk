@@ -41,3 +41,64 @@ plot-diff-box-arm64-mean:
 
 choice:
 	python scripts/choice_data.py --arch arm64
+
+
+plot-diff-amd64-mean-d_x2Integrate:
+	python scripts/plot_arch.py --metric mean --bench d_x2Integrate
+
+plot-diff-amd64-median-d_x2Integrate:
+	python scripts/plot_arch.py --metric median --bench d_x2Integrate
+
+plot-diff-amd64-min-d_x2Integrate:
+	python scripts/plot_arch.py --metric min --bench d_x2Integrate
+
+plot-diff-amd64-max-d_x2Integrate:
+	python scripts/plot_arch.py --metric max --bench d_x2Integrate
+
+plot-diff-amd64-stddev-d_x2Integrate:
+	python scripts/plot_arch.py --metric stddev --bench d_x2Integrate
+
+plot-diff-amd64-mean-d_multiply:
+	python scripts/plot_arch.py --metric mean --bench d_multiply
+
+plot-diff-amd64-median-d_factorize:
+	python scripts/plot_arch.py --metric median --bench d_factorize
+
+plot-diff-amd64-min-d_factorize:
+	python scripts/plot_arch.py --metric min --bench d_factorize
+
+plot-diff-amd64-max-d_multiply:
+	python scripts/plot_arch.py --metric max --bench d_multiply
+
+plot-diff-amd64-stddev-d_factorize:
+	python scripts/plot_arch.py --metric stddev --bench d_factorize
+
+plot-diff-arm64-mean-d_x2Integrate:
+	python scripts/plot_arch.py --metric mean --bench d_x2Integrate
+
+plot-diff-arm64-median-d_x2Integrate:
+	python scripts/plot_arch.py --metric median --bench d_x2Integrate
+
+plot-diff-arm64-min-d_x2Integrate:
+	python scripts/plot_arch.py --metric min --bench d_x2Integrate
+
+plot-diff-arm64-max-d_x2Integrate:
+	python scripts/plot_arch.py --metric max --bench d_x2Integrate
+
+plot-diff-arm64-stddev-d_x2Integrate:
+	python scripts/plot_arch.py --metric stddev --bench d_x2Integrate
+
+plot-diff-arm64-mean-d_multiply:
+	python scripts/plot_arch.py --metric mean --bench d_multiply
+
+plot-diff-arm64-median-d_factorize:
+	python scripts/plot_arch.py --metric median --bench d_factorize
+
+plot-diff-arm64-min-d_factorize:
+	python scripts/plot_arch.py --metric min --bench d_factorize
+
+plot-diff-arm64-max-d_multiply:
+	python scripts/plot_arch.py --metric max --bench d_multiply
+
+plot-diff-arm64-stddev-d_factorize:
+	python scripts/plot_arch.py --metric stddev --bench d_factorize

@@ -289,6 +289,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/benchmark/reliable": {
+            "get": {
+                "description": "Возвращает список имён функций, у которых Cv (stddev/mean) для всех языков не превышает заданный порог, по выбранной архитектуре.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Benchmark"
+                ],
+                "summary": "Получить надёжные функции по коэффициенту вариации",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Архитектура (amd64, arm64 и т.д.)",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Максимально допустимое значение Cv (по умолчанию 0.2)",
+                        "name": "cv-threshold",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Минимальное значение среднего (по умолчанию 1e-12)",
+                        "name": "min-mean",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ReliableBenchmarksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Данные не найдены",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/design": {
             "post": {
                 "description": "Создает новый эксперимент и загружает связанные файлы (JS и/или Wasm)",
@@ -629,6 +688,23 @@ const docTemplate = `{
                     "description": "Имя функции",
                     "type": "string",
                     "example": "calc"
+                }
+            }
+        },
+        "handlers.ReliableBenchmarksResponse": {
+            "type": "object",
+            "properties": {
+                "arch": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         }
