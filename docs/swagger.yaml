@@ -1,0 +1,476 @@
+definitions:
+  domain.BenchmarkCase:
+    properties:
+      cpp:
+        example: 0.1728
+        type: number
+      go:
+        example: 0.6173
+        type: number
+      javascript:
+        example: 0.1379
+        type: number
+      name:
+        example: fibonacciIterative
+        type: string
+      rust:
+        example: 0.1417
+        type: number
+    type: object
+  domain.BenchmarkResults:
+    properties:
+      arch:
+        example: arm64
+        type: string
+      metric:
+        example: median
+        type: string
+      results:
+        items:
+          $ref: '#/definitions/domain.BenchmarkCase'
+        type: array
+    type: object
+  domain.Design:
+    properties:
+      functions:
+        description: Массив функций и их аргументов
+        items:
+          $ref: '#/definitions/domain.Function'
+        type: array
+      id:
+        description: Идентификатор плана эксперимента
+        example: exp123
+        type: string
+      js:
+        description: Имя файла JavaScript
+        example: index.js
+        type: string
+      lang:
+        description: Язык реализации модуля
+        example: go
+        type: string
+      name:
+        description: Имя эксперимента
+        example: x2Integrate
+        type: string
+      wasm:
+        description: Имя модуля WebAssembly
+        example: module.wasm
+        type: string
+    type: object
+  domain.Function:
+    properties:
+      args:
+        description: Список числовых аргументов функции
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: number
+        type: array
+      function:
+        description: Имя функции
+        example: calc
+        type: string
+    type: object
+  handlers.ReliableBenchmarksResponse:
+    properties:
+      arch:
+        type: string
+      count:
+        type: integer
+      names:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /api/benchmark:
+    get:
+      description: Получает результаты по заданной метрике (mean, median, stddev,
+        min, max) и архитектуре (например, arm64, amd64)
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить результаты бенчмарков
+      tags:
+      - Benchmark
+  /api/benchmark-diff:
+    get:
+      description: Возвращает разницу по каждому языку между функцией и её Mock-версией
+        (например, d_factorize = factorize - factorizeMock)
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить разницу между функцией и Mock
+      tags:
+      - Benchmark
+  /api/benchmark-diff/all:
+    get:
+      description: Возвращает массив разниц по каждому языку между функцией и её Mock-версией
+        для всех архитектур и метрик (например, d_factorize = factorize - factorizeMock).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.BenchmarkResults'
+            type: array
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить разницу между функцией и Mock по всем архитектурам и метрикам
+      tags:
+      - Benchmark
+  /api/benchmark/all:
+    get:
+      description: Возвращает массив всех результатов бенчмарков по всем архитектурам
+        (например, amd64, arm64) и всем метрикам (mean, median, stddev, min, max).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.BenchmarkResults'
+            type: array
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить результаты бенчмарков по всем архитектурам и метрикам
+      tags:
+      - Benchmark
+  /api/benchmark/mock:
+    get:
+      description: Возвращает только бенчмарки с постфиксом Mock в имени функции.
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить результаты только Mock-функций
+      tags:
+      - Benchmark
+  /api/benchmark/not-mock:
+    get:
+      description: Возвращает только бенчмарки без постфикса Mock в имени функции.
+      parameters:
+      - description: Метрика (mean, median, stddev, min, max)
+        in: query
+        name: metric
+        required: true
+        type: string
+      - description: Архитектура (arm64, amd64)
+        in: query
+        name: arch
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BenchmarkResults'
+        "400":
+          description: Ошибка в запросе из-за отсутствия параметров
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Получить результаты только "реальных" функций (без Mock)
+      tags:
+      - Benchmark
+  /api/benchmark/reliable:
+    get:
+      description: Возвращает список имён функций, у которых Cv (stddev/mean) для
+        всех языков не превышает заданный порог, по выбранной архитектуре.
+      parameters:
+      - description: Архитектура (amd64, arm64 и т.д.)
+        in: query
+        name: arch
+        required: true
+        type: string
+      - description: Максимально допустимое значение Cv (по умолчанию 0.2)
+        in: query
+        name: cv-threshold
+        type: number
+      - description: Минимальное значение среднего (по умолчанию 1e-12)
+        in: query
+        name: min-mean
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ReliableBenchmarksResponse'
+        "400":
+          description: Ошибка в запросе
+          schema:
+            type: object
+        "404":
+          description: Данные не найдены
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка
+          schema:
+            type: object
+      summary: Получить надёжные функции по коэффициенту вариации
+      tags:
+      - Benchmark
+  /api/design:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создает новый эксперимент и загружает связанные файлы (JS и/или
+        Wasm)
+      parameters:
+      - description: Имя эксперимента
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Язык реализации модуля
+        in: formData
+        name: lang
+        required: true
+        type: string
+      - description: Файл JavaScript
+        in: formData
+        name: js
+        type: file
+      - description: Файл WebAssembly
+        in: formData
+        name: wasm
+        type: file
+      - description: JSON-строка с функциями
+        in: formData
+        name: functions
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ID созданного эксперимента
+          schema:
+            type: string
+        "400":
+          description: Неверный запрос
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Создать новый эксперимент
+      tags:
+      - Design
+  /api/design/{id}:
+    delete:
+      description: Удаляет эксперимент и связанные файлы по ID
+      parameters:
+      - description: ID эксперимента
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Эксперимент не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Удалить эксперимент
+      tags:
+      - Design
+  /api/design/{id}/files/{type}:
+    get:
+      description: Скачивает JavaScript или WebAssembly файл эксперимента по ID
+      parameters:
+      - description: ID эксперимента
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Тип файла (js или wasm)
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Файл или эксперимент не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Скачать файл эксперимента
+      tags:
+      - Design
+  /api/designs:
+    get:
+      description: Возвращает список планов экспериментов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Design'
+            type: array
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: получает список планов экспериментов
+      tags:
+      - Design
+  /api/experiment/{uid}/start:
+    post:
+      consumes:
+      - application/json
+      description: Запуск нового эксперимента по UID и параметрам из тела запроса
+      parameters:
+      - description: Уникальный идентификатор дизайна (Design ID)
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Параметры запуска эксперимента
+        in: body
+        name: payload
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Эксперимент успешно запущен
+          schema:
+            type: object
+        "400":
+          description: Ошибка в запросе из-за отсутствия UID или некорректных данных
+          schema:
+            type: object
+        "404":
+          description: Дизайн не найден по переданному UID
+          schema:
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: object
+      summary: Запуск эксперимента
+      tags:
+      - Experiment
+swagger: "2.0"

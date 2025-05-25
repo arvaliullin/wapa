@@ -1,0 +1,84 @@
+{
+    "name": "go_exps",
+    "lang": "go",
+    "js": "",
+    "wasm": "integrate.wasm",
+    "functions": [
+        {
+            "function": "x2Integrate",
+            "args": [
+                0,
+                100,
+                10000
+            ]
+        },
+        {
+            "function": "x2IntegrateMock",
+            "args": [
+                0,
+                100,
+                10000
+            ]
+        },
+        {
+            "function": "fibonacciRecursive",
+            "args": [
+                35
+            ]
+        },
+        {
+            "function": "fibonacciRecursiveMock",
+            "args": [
+                35
+            ]
+        },
+        {
+            "function": "fibonacciIterative",
+            "args": [
+                35
+            ]
+        },
+        {
+            "function": "fibonacciIterativeMock",
+            "args": [
+                35
+            ]
+        },
+        {
+            "function": "multiply",
+            "args": [
+                1000000
+            ]
+        },
+        {
+            "function": "multiplyMock",
+            "args": [
+                1000000
+            ]
+        },
+        {
+            "function": "multiplyVector",
+            "args": [
+                10000
+            ]
+        },
+        {
+            "function": "multiplyVectorMock",
+            "args": [
+                10000
+            ]
+        },
+        {
+            "function": "factorize",
+            "args": [
+                56
+            ]
+        },
+        {
+            "function": "factorizeMock",
+            "args": [
+                56
+            ]
+        }
+    ]
+}

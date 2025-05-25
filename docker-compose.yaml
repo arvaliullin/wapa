@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/db:/docker-entrypoint-initdb.d
+
+  composer:
+    build:
+      context: .
+      dockerfile: build/composer.Dockerfile
+    environment:
+      PSQL_DB_CONNECTION: "postgresql://postgres:password@database:5432/postgres?sslmode=disable"
+      COMPOSER_DATA_PATH: "/opt/wapa/composer/data"
+      NATS_URL: "nats://nats:4222"
+    ports:
+      - "8080:8080"
+    volumes:
+      - composer_data:/opt/wapa/composer/data
+    depends_on:
+      - database
+      - nats
+
+  runner:
+    build:
+      context: .
+      dockerfile: build/runner.Dockerfile
+    environment:
+      NATS_URL: "nats://nats:4222"
+      COMPOSER_ADDRESS: "http://composer:8080"
+      DATA_PATH: "/opt/wapa/runner/data"
+    volumes:
+      - runner_data:/opt/wapa/runner/data
+    depends_on:
+      - nats
+      - composer
+
+volumes:
+  composer_data:
+  postgres_data:
+  runner_data:

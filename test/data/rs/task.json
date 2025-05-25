@@ -1,0 +1,10 @@
+{
+    "function": "x2Integrate",
+    "args": [
+        0,
+        100,
+        10000
+    ],
+    "jsPath": "test/data/rs/wapa_integrate_rs.js",
+    "wasmPath": "test/data/rs/wapa_integrate_rs_bg.wasm"
+}
