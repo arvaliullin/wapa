@@ -1,0 +1,7 @@
+{
+    "name": "Go Dev Container",
+    "image": "mcr.microsoft.com/devcontainers/go:1.24",
+    "features": {},
+    "forwardPorts": [],
+    "postCreateCommand": "go mod tidy"
+}
