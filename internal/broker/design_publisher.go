@@ -16,7 +16,7 @@ func NewDesignPublisher(conn *nats.Conn, subj string) *DesignPublisher {
 	}
 }
 
-// Publish публикует данные о плане эксперимента исполнителям
+// Publish публикует данные о плане эксперимента исполнителям.
 func (dp *DesignPublisher) Publish(message []byte) error {
 	return dp.NATSConnection.Publish(dp.Subject, message)
 }

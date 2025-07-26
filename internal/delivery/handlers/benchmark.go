@@ -35,7 +35,6 @@ func RegisterBenchmarkHandler(
 	e.GET("/api/benchmark/mock", handler.GetBenchmarksOnlyMock)
 	e.GET("/api/benchmark/not-mock", handler.GetBenchmarksOnlyNotMock)
 	e.GET("/api/benchmark/reliable", handler.GetReliableBenchmarks)
-
 }
 
 // GetBenchmarkResults возвращает результаты бенчмарков для заданной метрики и архитектуры.
@@ -50,7 +49,7 @@ func RegisterBenchmarkHandler(
 // @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
 // @Failure      404     {object}  object "Данные не найдены"
 // @Failure      500     {object}  object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark [get]
+// @Router       /api/benchmark [get].
 func (h *BenchmarkHandler) GetBenchmarkResults(c echo.Context) error {
 	metric := c.QueryParam("metric")
 	arch := c.QueryParam("arch")
@@ -88,7 +87,7 @@ func (h *BenchmarkHandler) GetBenchmarkResults(c echo.Context) error {
 // @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
 // @Failure      404     {object}  object "Данные не найдены"
 // @Failure      500     {object}  object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark-diff [get]
+// @Router       /api/benchmark-diff [get].
 func (h *BenchmarkHandler) GetBenchmarkDiff(c echo.Context) error {
 	metric := c.QueryParam("metric")
 	arch := c.QueryParam("arch")
@@ -154,7 +153,7 @@ func (h *BenchmarkHandler) GetBenchmarkDiff(c echo.Context) error {
 // @Produce      json
 // @Success      200     {array}   domain.BenchmarkResults
 // @Failure      500     {object}  object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark/all [get]
+// @Router       /api/benchmark/all [get].
 func (h *BenchmarkHandler) GetAllBenchmarkResults(c echo.Context) error {
 	results, err := h.BenchmarkRepo.GetAllBenchmarkResults()
 	if err != nil {
@@ -173,7 +172,7 @@ func (h *BenchmarkHandler) GetAllBenchmarkResults(c echo.Context) error {
 // @Produce      json
 // @Success      200     {array}  domain.BenchmarkResults
 // @Failure      500     {object} object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark-diff/all [get]
+// @Router       /api/benchmark-diff/all [get].
 func (h *BenchmarkHandler) GetAllBenchmarkDiffs(c echo.Context) error {
 	allResults, err := h.BenchmarkRepo.GetAllBenchmarkResults()
 	if err != nil {
@@ -231,7 +230,7 @@ func (h *BenchmarkHandler) GetAllBenchmarkDiffs(c echo.Context) error {
 // @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
 // @Failure      404     {object}  object "Данные не найдены"
 // @Failure      500     {object}  object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark/mock [get]
+// @Router       /api/benchmark/mock [get].
 func (h *BenchmarkHandler) GetBenchmarksOnlyMock(c echo.Context) error {
 	metric := c.QueryParam("metric")
 	arch := c.QueryParam("arch")
@@ -269,7 +268,7 @@ func (h *BenchmarkHandler) GetBenchmarksOnlyMock(c echo.Context) error {
 // @Failure      400     {object}  object "Ошибка в запросе из-за отсутствия параметров"
 // @Failure      404     {object}  object "Данные не найдены"
 // @Failure      500     {object}  object "Внутренняя ошибка сервера"
-// @Router       /api/benchmark/not-mock [get]
+// @Router       /api/benchmark/not-mock [get].
 func (h *BenchmarkHandler) GetBenchmarksOnlyNotMock(c echo.Context) error {
 	metric := c.QueryParam("metric")
 	arch := c.QueryParam("arch")
@@ -308,7 +307,7 @@ func (h *BenchmarkHandler) GetBenchmarksOnlyNotMock(c echo.Context) error {
 // @Failure     400 {object} object "Ошибка в запросе"
 // @Failure     404 {object} object "Данные не найдены"
 // @Failure     500 {object} object "Внутренняя ошибка"
-// @Router      /api/benchmark/reliable [get]
+// @Router      /api/benchmark/reliable [get].
 func (h *BenchmarkHandler) GetReliableBenchmarks(c echo.Context) error {
 	arch := c.QueryParam("arch")
 	if arch == "" {
@@ -347,7 +346,12 @@ type ReliableBenchmarksResponse struct {
 	Names []string `json:"names"`
 }
 
-func pickReliableBenchmarks(c echo.Context, arch string, cvThreshold, minMean float64, allResults []domain.BenchmarkResults) error {
+func pickReliableBenchmarks(
+	c echo.Context,
+	arch string,
+	cvThreshold, minMean float64,
+	allResults []domain.BenchmarkResults,
+) error {
 	type LangStat struct {
 		Mean   float64
 		Stddev float64
@@ -382,9 +386,10 @@ func pickReliableBenchmarks(c echo.Context, arch string, cvThreshold, minMean fl
 					continue
 				}
 				s := stats[name][lang]
-				if metric == "mean" {
+				switch metric {
+				case "mean":
 					s.Mean = value
-				} else if metric == "stddev" {
+				case "stddev":
 					s.Stddev = value
 				}
 				stats[name][lang] = s

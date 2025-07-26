@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Mock repo that implements DesignRepositoryContract
+// Mock repo that implements DesignRepositoryContract.
 type MockDesignRepo struct {
 	designs map[string]domain.Design
 }
@@ -57,7 +57,7 @@ func (repo *MockDesignRepo) GetByID(id string) (domain.Design, error) {
 	return design, nil
 }
 
-// Mock storage that implements DesignStorageContract
+// Mock storage that implements DesignStorageContract.
 type MockDesignStorage struct {
 	files map[string]map[string][]byte
 }

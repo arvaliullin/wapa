@@ -7,11 +7,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// RunnerConfig настройки сервиса composer
+// RunnerConfig настройки сервиса composer.
 type RunnerConfig struct {
 	app.ServiceConfig `yaml:",inline"`
-	ComposerAddress   string `yaml:"composer_address"`
-	DataPath          string `yaml:"data_path"`
+
+	ComposerAddress string `yaml:"composer_address"`
+	DataPath        string `yaml:"data_path"`
 }
 
 func NewRunnerConfig(configPath string) (*RunnerConfig, error) {

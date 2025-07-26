@@ -10,7 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// RunnerService получает план эксперимента, запускает его, отправляет результат в composer
+// RunnerService получает план эксперимента, запускает его, отправляет результат в composer.
 type RunnerService struct {
 	Config         *RunnerConfig
 	Storage        *storage.ExperimentStorage
@@ -68,7 +68,6 @@ func (service *RunnerService) Start() {
 }
 
 func (service *RunnerService) Execute(design domain.DesignPayload) (domain.Experiment, error) {
-
 	var wasmPath, jsPath string
 
 	wasmPath, err := service.Storage.DownloadFile(design, "wasm", service.Config.ComposerAddress)

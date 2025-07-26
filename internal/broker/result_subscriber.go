@@ -27,7 +27,6 @@ func NewResultSubscriber(natsConnection *nats.Conn,
 }
 
 func (es *ResultSubscriber) Start() {
-
 	_, err := es.NATSConnection.Subscribe(es.Subject, func(msg *nats.Msg) {
 		var exp domain.Experiment
 		if err := json.Unmarshal(msg.Data, &exp); err != nil {
@@ -41,7 +40,6 @@ func (es *ResultSubscriber) Start() {
 		} else {
 			log.Printf("[%s] Experiment saved: %+v\n", es.Subject, id)
 		}
-
 	})
 
 	if err != nil {

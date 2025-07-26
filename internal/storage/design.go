@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -17,12 +18,12 @@ type DesignStorageContract interface {
 	DeleteDesignFiles(design *domain.Design) error
 }
 
-// DesignStorage отвечает за взаимодействие с файловым хранилищем JavaScript и WebAssembly модулей
+// DesignStorage отвечает за взаимодействие с файловым хранилищем JavaScript и WebAssembly модулей.
 type DesignStorage struct {
 	DataPath string
 }
 
-// SaveDesignFiles сохраняет файлы JavaScript и WebAssembly
+// SaveDesignFiles сохраняет файлы JavaScript и WebAssembly.
 func (ds *DesignStorage) SaveDesignFiles(design *domain.Design,
 	jsContent io.Reader, wasmContent io.Reader) error {
 	if design.JS != "" && jsContent != nil {
@@ -42,28 +43,28 @@ func (ds *DesignStorage) SaveDesignFiles(design *domain.Design,
 	return nil
 }
 
-// GetDesignJSFilePath возвращает полный путь к JavaScript файлу
+// GetDesignJSFilePath возвращает полный путь к JavaScript файлу.
 func (ds *DesignStorage) GetDesignJSFilePath(design *domain.Design) (string, error) {
 	if design.JS == "" {
-		return "", fmt.Errorf("указанный объект Design не содержит имени JS файла")
+		return "", errors.New("указанный объект Design не содержит имени JS файла")
 	}
 	return ds.getFilePath(design.ID, design.JS)
 }
 
-// GetDesignWasmFilePath возвращает полный путь к WebAssembly файлу
+// GetDesignWasmFilePath возвращает полный путь к WebAssembly файлу.
 func (ds *DesignStorage) GetDesignWasmFilePath(design *domain.Design) (string, error) {
 	if design.Wasm == "" {
-		return "", fmt.Errorf("указанный объект Design не содержит имени Wasm файла")
+		return "", errors.New("указанный объект Design не содержит имени Wasm файла")
 	}
 	return ds.getFilePath(design.ID, design.Wasm)
 }
 
-// DeleteDesignFiles удаляет все файлы и директорию, связанную с объектом Design
+// DeleteDesignFiles удаляет все файлы и директорию, связанную с объектом Design.
 func (ds *DesignStorage) DeleteDesignFiles(design *domain.Design) error {
 	return ds.DeleteFiles(design.ID)
 }
 
-// saveFile сохраняет файл в рамках директории Design
+// saveFile сохраняет файл в рамках директории Design.
 func (ds *DesignStorage) saveFile(designID string,
 	fileName string, fileContent io.Reader) (string, error) {
 	dirPath := filepath.Join(ds.DataPath, designID)
@@ -87,7 +88,7 @@ func (ds *DesignStorage) saveFile(designID string,
 	return filePath, nil
 }
 
-// getFilePath возвращает полный путь к файлу
+// getFilePath возвращает полный путь к файлу.
 func (ds *DesignStorage) getFilePath(designID string, fileName string) (string, error) {
 	filePath := filepath.Join(ds.DataPath, designID, fileName)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -96,7 +97,7 @@ func (ds *DesignStorage) getFilePath(designID string, fileName string) (string, 
 	return filePath, nil
 }
 
-// DeleteFiles удаляет все файлы и папку для указанного DesignID
+// DeleteFiles удаляет все файлы и папку для указанного DesignID.
 func (ds *DesignStorage) DeleteFiles(designID string) error {
 	dirPath := filepath.Join(ds.DataPath, designID)
 	return os.RemoveAll(dirPath)

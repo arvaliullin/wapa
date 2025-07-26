@@ -141,7 +141,6 @@ func (repo *DesignRepository) GetAll() ([]domain.Design, error) {
 }
 
 func (repo *DesignRepository) GetByID(id string) (domain.Design, error) {
-
 	var design domain.Design
 
 	err := WithConnection(repo.DbConnection, func(conn *sql.DB) error {

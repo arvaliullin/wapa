@@ -11,7 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// ComposerService
+// ComposerService.
 type ComposerService struct {
 	Config           *ComposerConfig
 	HttpService      delivery.HttpService
@@ -21,7 +21,6 @@ type ComposerService struct {
 }
 
 func NewComposerService(config *ComposerConfig) *ComposerService {
-
 	nc, err := nats.Connect(config.NatsURL)
 	if err != nil {
 		log.Fatalf("Error connecting to NATS: %v", err)
@@ -39,7 +38,6 @@ func NewComposerService(config *ComposerConfig) *ComposerService {
 }
 
 func (service *ComposerService) Run() {
-
 	go func() {
 		log.Printf("Starting HTTP server on %s", service.Config.Address)
 

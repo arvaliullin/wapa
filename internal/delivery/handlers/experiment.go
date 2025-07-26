@@ -20,7 +20,6 @@ type ExperimentHandler struct {
 
 func RegisterExperimentHandler(httpService delivery.HttpService,
 	repo persistence.DesignRepositoryContract, publisher *broker.DesignPublisher) {
-
 	handler := &ExperimentHandler{
 		DesignRepo:      repo,
 		DesignPublisher: publisher,
@@ -44,7 +43,7 @@ func RegisterExperimentHandler(httpService delivery.HttpService,
 // @Failure      400      {object}  object      "Ошибка в запросе из-за отсутствия UID или некорректных данных"
 // @Failure      404      {object}  object      "Дизайн не найден по переданному UID"
 // @Failure      500      {object}  object      "Внутренняя ошибка сервера"
-// @Router       /api/experiment/{uid}/start [post]
+// @Router       /api/experiment/{uid}/start [post].
 func (h *ExperimentHandler) StartExperiment(c echo.Context) error {
 	uid := c.Param("uid")
 	if uid == "" {

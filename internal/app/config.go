@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ServiceConfig
+// ServiceConfig.
 type ServiceConfig struct {
 	DbConnection      string `yaml:"database_connection"`
 	NatsURL           string `yaml:"nats_url"`

@@ -1,6 +1,6 @@
 package hyperfine
 
-// HyperfineResult результат измерения утилитой hyperfine
+// HyperfineResult результат измерения утилитой hyperfine.
 type HyperfineResult struct {
 	Results []struct {
 		Command   string    `json:"command"`
