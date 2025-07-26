@@ -12,6 +12,9 @@ build: swag
 up:
 	docker-compose up --build --force-recreate
 
+lint:
+	golangci-lint run ./...
+
 down:
 	docker-compose down
 
