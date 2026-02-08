@@ -35,3 +35,7 @@ prune:
 	docker container prune -f
 
 .PHONY: build up db tests down prune
+
+.PHONY: fmt
+fmt:
+	- go fmt ./...
