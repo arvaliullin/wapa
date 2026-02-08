@@ -28,3 +28,4 @@ out/
 env/
 exps/rs/target/
 *.zip
+bun.lock

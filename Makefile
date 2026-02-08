@@ -27,4 +27,11 @@ tests:
 env:
 	- python3 -m venv env
 
-.PHONY: build up db tests down
+prune:
+	docker-compose down --rmi all --volumes --remove-orphans
+	docker system prune -a -f
+	docker volume prune -f
+	docker image prune -a -f
+	docker container prune -f
+
+.PHONY: build up db tests down prune
