@@ -10,7 +10,10 @@ build: swag
 	go build -o out/bin/composer github.com/arvaliullin/wapa/cmd/composer
 
 up:
-	docker-compose up --build --force-recreate
+	docker-compose up --build --force-recreate -d
+
+lint:
+	golangci-lint run ./...
 
 down:
 	docker-compose down
@@ -24,4 +27,15 @@ tests:
 env:
 	- python3 -m venv env
 
-.PHONY: build up db tests down
+prune:
+	docker-compose down --rmi all --volumes --remove-orphans
+	docker system prune -a -f
+	docker volume prune -f
+	docker image prune -a -f
+	docker container prune -f
+
+.PHONY: build up db tests down prune
+
+.PHONY: fmt
+fmt:
+	- go fmt ./...

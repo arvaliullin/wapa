@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -10,27 +11,28 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// RunnerService получает план эксперимента, запускает его, отправляет результат в composer
+// RunnerService получает план эксперимента, запускает его, отправляет результат в composer.
 type RunnerService struct {
 	Config         *RunnerConfig
 	Storage        *storage.ExperimentStorage
 	NATSConnection *nats.Conn
 }
 
-func NewRunnerService(config *RunnerConfig) *RunnerService {
+// NewRunnerService создаёт новый экземпляр RunnerService.
+func NewRunnerService(config *RunnerConfig) (*RunnerService, error) {
 	st, err := storage.NewExperimentStorage(config.DataPath)
 	if err != nil {
-		log.Fatalf("Storage init error: %v", err)
+		return nil, err
 	}
 	nc, err := nats.Connect(config.NatsURL)
 	if err != nil {
-		log.Fatalf("Error connecting to NATS: %v", err)
+		return nil, err
 	}
 	return &RunnerService{
 		Config:         config,
 		Storage:        st,
 		NATSConnection: nc,
-	}
+	}, nil
 }
 
 func (service *RunnerService) Publish(message []byte) error {
@@ -68,7 +70,6 @@ func (service *RunnerService) Start() {
 }
 
 func (service *RunnerService) Execute(design domain.DesignPayload) (domain.Experiment, error) {
-
 	var wasmPath, jsPath string
 
 	wasmPath, err := service.Storage.DownloadFile(design, "wasm", service.Config.ComposerAddress)
@@ -94,8 +95,11 @@ func (service *RunnerService) Execute(design domain.DesignPayload) (domain.Exper
 	return experiment, nil
 }
 
-func (service *RunnerService) Run() {
+// Run запускает сервис и ожидает сигнала завершения.
+func (service *RunnerService) Run(ctx context.Context) {
 	go service.Start()
-	defer service.NATSConnection.Close()
-	select {}
+	<-ctx.Done()
+	if err := service.NATSConnection.Drain(); err != nil {
+		log.Printf("NATS drain error: %v", err)
+	}
 }

@@ -7,11 +7,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ComposerConfig настройки сервиса composer
+// ComposerConfig настройки сервиса composer.
 type ComposerConfig struct {
 	app.ServiceConfig `yaml:",inline"`
-	Address           string `yaml:"composer_address"`
-	DataPath          string `yaml:"composer_data_path"`
+
+	Address  string `yaml:"composer_address"`
+	DataPath string `yaml:"composer_data_path"`
 }
 
 func NewComposerConfig(configPath string) (*ComposerConfig, error) {

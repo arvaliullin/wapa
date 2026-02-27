@@ -74,7 +74,7 @@ def plot_benchmarks(
         plot_type="bar"
     ):
     """
-    compare: 'lang' — сравнить языки для каждой функции (default)
+    compare: 'lang' - сравнить языки для каждой функции (default)
     """
     if endpoint not in BENCHMARK_ENDPOINTS:
         print("Неизвестный endpoint!")

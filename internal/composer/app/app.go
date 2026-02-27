@@ -1,7 +1,10 @@
 package app
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/arvaliullin/wapa/internal/broker"
 	"github.com/arvaliullin/wapa/internal/delivery"
@@ -11,7 +14,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// ComposerService
+// ComposerService - сервис composer.
 type ComposerService struct {
 	Config           *ComposerConfig
 	HttpService      delivery.HttpService
@@ -20,11 +23,11 @@ type ComposerService struct {
 	ResultSubscriber *broker.ResultSubscriber
 }
 
-func NewComposerService(config *ComposerConfig) *ComposerService {
-
+// NewComposerService создаёт новый экземпляр ComposerService.
+func NewComposerService(config *ComposerConfig) (*ComposerService, error) {
 	nc, err := nats.Connect(config.NatsURL)
 	if err != nil {
-		log.Fatalf("Error connecting to NATS: %v", err)
+		return nil, err
 	}
 
 	experimentRepository := persistence.NewExperimentRepository(config.DbConnection)
@@ -35,14 +38,12 @@ func NewComposerService(config *ComposerConfig) *ComposerService {
 		NATSConnection:   nc,
 		DesignPublisher:  broker.NewDesignPublisher(nc, config.NatsSubjectRunner),
 		ResultSubscriber: broker.NewResultSubscriber(nc, config.NatsSubjectResult, experimentRepository),
-	}
+	}, nil
 }
 
-func (service *ComposerService) Run() {
-
+// Run запускает сервис и ожидает сигнала завершения.
+func (service *ComposerService) Run(ctx context.Context) {
 	go func() {
-		log.Printf("Starting HTTP server on %s", service.Config.Address)
-
 		designRepo := &persistence.DesignRepository{
 			DbConnection: service.Config.DbConnection,
 		}
@@ -63,14 +64,24 @@ func (service *ComposerService) Run() {
 
 		handlers.RegisterBenchmarkHandler(service.HttpService, benchmarkRepo)
 
-		service.HttpService.Start(service.Config.Address)
+		log.Printf("Starting HTTP server on %s", service.Config.Address)
+		if err := service.HttpService.Start(service.Config.Address); err != nil && err != http.ErrServerClosed {
+			log.Printf("HTTP server error: %v", err)
+		}
 	}()
 
-	go func() {
-		service.ResultSubscriber.Start()
-	}()
+	go service.ResultSubscriber.Start()
 
-	defer service.NATSConnection.Close()
+	<-ctx.Done()
 
-	select {}
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := service.HttpService.Shutdown(shutdownCtx); err != nil {
+		log.Printf("HTTP shutdown error: %v", err)
+	}
+
+	if err := service.NATSConnection.Drain(); err != nil {
+		log.Printf("NATS drain error: %v", err)
+	}
 }

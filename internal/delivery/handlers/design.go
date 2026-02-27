@@ -22,7 +22,6 @@ type DesignHandler struct {
 func RegisterDesignHandler(httpService delivery.HttpService,
 	repo persistence.DesignRepositoryContract,
 	storage storage.DesignStorageContract) {
-
 	handler := &DesignHandler{Repo: repo, Storage: storage}
 	e := httpService.(*delivery.EchoHttpService).Echo
 	e.GET("/api/designs", handler.GetAll)
@@ -68,7 +67,6 @@ func (h *DesignHandler) GetAll(c echo.Context) error {
 //	@Failure		500		{string}	string	"Ошибка сервера"
 //	@Router			/api/design [post]
 func (h *DesignHandler) Create(c echo.Context) error {
-
 	name := c.FormValue("name")
 	lang := c.FormValue("lang")
 	functions := c.FormValue("functions")
@@ -169,7 +167,6 @@ func (h *DesignHandler) DownloadFile(c echo.Context) error {
 	id := c.Param("id")
 	fileType := c.Param("type")
 
-	// Получаем эксперимент по ID
 	design, err := h.Repo.GetByID(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

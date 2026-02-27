@@ -19,7 +19,6 @@ type HyperfineCommand struct {
 }
 
 func NewHyperfineCommand(task domain.Task, designPayload domain.DesignPayload) *HyperfineCommand {
-
 	scripts := map[string]string{
 		"cpp":        "/opt/wapa/scripts/cpp.js",
 		"go":         "/opt/wapa/scripts/go.js",
@@ -66,10 +65,10 @@ func NewHyperfineCommand(task domain.Task, designPayload domain.DesignPayload) *
 func makeTaskEnvStr(task domain.Task) (taskEnv string) {
 	taskStr, err := json.Marshal(task)
 	if err != nil {
-		return
+		return taskEnv
 	}
 	taskEnv = "TASK_JSON=" + string(taskStr)
-	return
+	return taskEnv
 }
 
 func (command *HyperfineCommand) Run() (*HyperfineResult, error) {

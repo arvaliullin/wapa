@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"context"
 	"net/http"
 
 	_ "github.com/arvaliullin/wapa/docs"
@@ -13,8 +14,13 @@ type EchoHttpService struct {
 	Echo *echo.Echo
 }
 
-func (e *EchoHttpService) Start(address string) {
-	e.Echo.Logger.Fatal(e.Echo.Start(address))
+func (e *EchoHttpService) Start(address string) error {
+	return e.Echo.Start(address)
+}
+
+// Shutdown останавливает HTTP сервер с учётом контекста.
+func (e *EchoHttpService) Shutdown(ctx context.Context) error {
+	return e.Echo.Shutdown(ctx)
 }
 
 func NewEchoHttpService() *EchoHttpService {

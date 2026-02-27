@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:1.26.0-trixie
 RUN apt update && \
     apt install -y ca-certificates curl unzip hyperfine && \
     rm -rf /var/lib/apt/lists/*

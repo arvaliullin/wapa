@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,7 +22,7 @@ func NewExperimentStorage(baseDir string) (*ExperimentStorage, error) {
 	}
 	err := os.MkdirAll(baseDir, 0755)
 	if err != nil {
-		return nil, fmt.Errorf("не удалось создать директорию: %v", err)
+		return nil, fmt.Errorf("не удалось создать директорию: %w", err)
 	}
 	log.Printf("Директория успешно создана: %s", baseDir)
 	return &ExperimentStorage{DataDirStorage: baseDir}, nil
@@ -31,17 +32,17 @@ func (s *ExperimentStorage) ExperimentDir(id string) (string, error) {
 	dir := filepath.Join(s.DataDirStorage, id)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		return "", fmt.Errorf("не удалось создать директорию эксперимента: %v", err)
+		return "", fmt.Errorf("не удалось создать директорию эксперимента: %w", err)
 	}
 	return dir, nil
 }
 
-// DownloadFile скачивает файл и сохраняет его в локальное хранилище в папке эксперимента
+// DownloadFile скачивает файл и сохраняет его в локальное хранилище в папке эксперимента.
 func (s *ExperimentStorage) DownloadFile(design domain.DesignPayload, filetype, apiUrl string) (string, error) {
 	id := design.ID
 
 	if id == "" || filetype == "" || apiUrl == "" {
-		return "", fmt.Errorf("все параметры (id, type, apiUrl) обязательны для скачивания файла")
+		return "", errors.New("все параметры (id, type, apiUrl) обязательны для скачивания файла")
 	}
 
 	url := fmt.Sprintf("%s/api/design/%s/files/%s", apiUrl, id, filetype)
@@ -86,7 +87,7 @@ func (s *ExperimentStorage) DownloadFile(design domain.DesignPayload, filetype, 
 	return filePath, nil
 }
 
-// DeleteFile удаляет файл по пути
+// DeleteFile удаляет файл по пути.
 func (s *ExperimentStorage) DeleteFile(filePath string) error {
 	if filePath == "" {
 		log.Printf("Ошибка: Путь к файлу обязателен для удаления")
@@ -101,12 +102,12 @@ func (s *ExperimentStorage) DeleteFile(filePath string) error {
 	return nil
 }
 
-// CleanUp удаляет все файлы и папки из хранилища (рекурсивно)
+// CleanUp удаляет все файлы и папки из хранилища (рекурсивно).
 func (s *ExperimentStorage) CleanUp() error {
 	files, err := os.ReadDir(s.DataDirStorage)
 	if err != nil {
 		log.Printf("Ошибка при очистке временного хранилища: %v", err)
-		return fmt.Errorf("не удалось очистить временное хранилище")
+		return errors.New("не удалось очистить временное хранилище")
 	}
 	log.Printf("Найдено %d каталог(ов) для удаления", len(files))
 	for _, file := range files {

@@ -67,7 +67,7 @@ def plot_box(df, x, y, hue=None, title="", ylabel="", xlabel="", show=True):
 def plot_benchmark_diff(api, arch, metric, compare="lang", plot_type="bar"):
     """
     Строит графики для разницы: d_func = func - funcMock
-    compare: 'lang' — сравнивать языки для каждой функции
+    compare: 'lang' - сравнивать языки для каждой функции
     """
     endpoint = "/api/benchmark-diff"
     data = fetch_data(api, endpoint, params={"metric": metric, "arch": arch})
